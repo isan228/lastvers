@@ -29,6 +29,6 @@ pm2 start index.js --name "sherdoc-kg" --env production
 pm2 save
 
 echo "✅ Деплой завершен!"
-echo "🌐 Приложение доступно по адресу: http://your-domain.com"
+echo "🌐 Приложение доступно по адресу: https://sherdoc.kg"
 echo "📊 Статус: pm2 status"
 echo "📝 Логи: pm2 logs sherdoc-kg"
