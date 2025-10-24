@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Выберите вид спорта — Sherdoc</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 30%, #2d2d2d 70%, #e10600 100%);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 20% 80%, rgba(225, 6, 0, 0.1) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 20%, rgba(255, 68, 68, 0.1) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: -1;
+    }
+    .selection-container {
+      max-width: 1200px;
+      width: 100%;
+      padding: 2rem;
+    }
+    .welcome-title {
+      font-size: 3.5rem;
+      font-weight: 900;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: #fff;
+      text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+      letter-spacing: 1px;
+      background: linear-gradient(135deg, #fff, #e10600);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .welcome-subtitle {
+      font-size: 1.4rem;
+      text-align: center;
+      margin-bottom: 3rem;
+      color: #e0e0e0;
+      font-weight: 300;
+      letter-spacing: 0.5px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    .sport-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+    .sport-card {
+      background: linear-gradient(145deg, #1a1a1a, #2d2d2d);
+      border-radius: 20px;
+      padding: 0;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      border: 3px solid transparent;
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    .sport-card:hover {
+      transform: translateY(-12px) scale(1.05);
+      box-shadow: 0 20px 60px rgba(225, 6, 0, 0.4);
+      border: 3px solid #e10600;
+    }
+    .sport-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, #e10600, #ff6b6b, #e10600);
+      transform: scaleX(0);
+      transition: transform 0.4s ease;
+      z-index: 2;
+    }
+    .sport-card:hover::before {
+      transform: scaleX(1);
+    }
+    .sport-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(225, 6, 0, 0.1), transparent);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      z-index: 1;
+    }
+    .sport-card:hover::after {
+      opacity: 1;
+    }
+    .sport-image {
+      width: 100%;
+      height: 80%;
+      object-fit: cover;
+      border-radius: 16px 16px 0 0;
+      transition: transform 0.4s ease;
+      filter: brightness(0.9) contrast(1.1);
+    }
+    .sport-card:hover .sport-image {
+      transform: scale(1.05);
+      filter: brightness(1) contrast(1.2);
+    }
+    .sport-content {
+      padding: 1.2rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      z-index: 3;
+    }
+    .sport-name {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #fff;
+      text-shadow: 0 3px 6px rgba(0, 0, 0, 0.7);
+      letter-spacing: 0.8px;
+      text-align: center;
+    }
+    .all-sports-btn {
+      background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+      color: #e10600;
+      border: 3px solid #e10600;
+      padding: 1.2rem 2.5rem;
+      border-radius: 50px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      margin-top: 2rem;
+      box-shadow: 0 8px 25px rgba(225, 6, 0, 0.2);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .all-sports-btn:hover {
+      background: linear-gradient(135deg, #e10600, #ff4444);
+      color: #fff;
+      transform: translateY(-4px) scale(1.05);
+      box-shadow: 0 15px 40px rgba(225, 6, 0, 0.4);
+      border: 3px solid #fff;
+    }
+    .loading {
+      text-align: center;
+      color: #e10600;
+      font-size: 1.2rem;
+    }
+    .sport-stats {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #333;
+    }
+    .stat-item {
+      text-align: center;
+    }
+    .stat-number {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #e10600;
+    }
+    .stat-label {
+      font-size: 0.8rem;
+      color: #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div class="selection-container">
+    <h1 class="welcome-title">Добро пожаловать в <span style="color: #e10600;">Sherdoc KG</span></h1>
+    <p class="welcome-subtitle">Выберите интересующий вас вид спорта для просмотра информации</p>
+    
+    <div id="loading" class="loading">
+      <i class="bi bi-hourglass-split"></i> Загрузка видов спорта...
+    </div>
+    
+    <div id="sports-grid" class="sport-grid" style="display: none;">
+      <!-- Виды спорта будут загружены динамически -->
+    </div>
+    
+    <div class="text-center">
+      <a href="/main.html" class="all-sports-btn">
+        <i class="bi bi-grid-3x3-gap"></i> Все виды спорта
+      </a>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Изображения для разных видов спорта
+    const sportImages = {
+      'Бокс': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop',
+      'ММА': 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop',
+      'Кикбоксинг': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop',
+      'Тхэквондо': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop',
+      'Каратэ': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop',
+      'Дзюдо': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop',
+      'Самбо': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop',
+      'Вольная борьба': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop',
+      'Греко-римская борьба': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop',
+      'Муай-тай': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop',
+      'Фехтование': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop',
+      'Кендо': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop',
+      'Джиу-джитсу': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop',
+      'Грэпплинг': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop',
+      'Капоэйра': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop',
+      'Сават': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop',
+      'Ушу Саньда': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop',
+      'Кудо': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop',
+      'Панкратион': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop',
+      'Боевое самбо': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop',
+      'Крав-мага': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop',
+      'Хапкидо': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop',
+      'Шуто': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop',
+      'Санда': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop',
+      'Айкидо': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop',
+      'Шуайцзяо': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop',
+      'Сумо': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop',
+      'Армрестлинг': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop',
+      'Куреш': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop',
+      'Алыш': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop'
+    };
+
+    // Функция для применения стилей спорта к карточкам
+    function applySportStyles(sport, card) {
+      if (sport.primaryColor || sport.secondaryColor || sport.textColor) {
+        // Основной цвет
+        if (sport.primaryColor) {
+          card.style.borderColor = sport.primaryColor;
+          card.style.boxShadow = `0 4px 24px ${sport.primaryColor}33`;
+        }
+        
+        // Дополнительный цвет
+        if (sport.secondaryColor) {
+          card.style.backgroundColor = sport.secondaryColor;
+        }
+        
+        // Цвет текста
+        if (sport.textColor) {
+          const sportName = card.querySelector('.sport-name');
+          if (sportName) {
+            sportName.style.color = sport.textColor;
+          }
+        }
+      }
+    }
+
+    async function loadSports() {
+      try {
+        const res = await fetch('/api/sports');
+        const sports = await res.json();
+        
+        const grid = document.getElementById('sports-grid');
+        const loading = document.getElementById('loading');
+        
+        loading.style.display = 'none';
+        grid.style.display = 'grid';
+        
+        // Показываем все виды спорта
+        sports.forEach(sport => {
+          const card = document.createElement('div');
+          card.className = 'sport-card';
+          card.onclick = () => {
+            window.location.href = `/main.html?sport=${encodeURIComponent(sport.name)}`;
+          };
+          
+          const imageUrl = sportImages[sport.name] || sport.image || 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=300&fit=crop';
+          
+          card.innerHTML = `
+            <img src="${imageUrl}" alt="${sport.name}" class="sport-image">
+            <div class="sport-content">
+              <div class="sport-name">${sport.name}</div>
+            </div>
+          `;
+          
+          // Применяем стили спорта к карточке
+          applySportStyles(sport, card);
+          
+          grid.appendChild(card);
+        });
+        
+      } catch (error) {
+        console.error('Ошибка загрузки видов спорта:', error);
+        document.getElementById('loading').innerHTML = '<i class="bi bi-exclamation-triangle"></i> Ошибка загрузки данных';
+      }
+    }
+
+    // Загружаем виды спорта при загрузке страницы
+    loadSports();
+  </script>
+</body>
+</html>

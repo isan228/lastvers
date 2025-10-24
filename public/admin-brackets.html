@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админ: Турнирные сетки — Sherdoc</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #111 60%, #e10600 100%);
+      color: #fff;
+      min-height: 100vh;
+    }
+    .admin-card {
+      background: #181818cc;
+      border-radius: 18px;
+      box-shadow: 0 4px 24px #e1060033;
+      padding: 2.5rem 2rem 2rem 2rem;
+      width: 100%;
+      max-width: 1000px;
+      margin: 3rem auto;
+    }
+    .bracket-section {
+      background: #222;
+      border-radius: 10px;
+      margin-bottom: 1.5rem;
+      padding: 1.5rem;
+    }
+    .fighter-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .fighter-item {
+      background: #181818;
+      border-radius: 8px;
+      padding: 0.7rem 1.2rem;
+      color: #fff;
+      border: 2px solid #e10600;
+      cursor: pointer;
+      transition: background 0.2s, border 0.2s;
+      user-select: none;
+    }
+    .fighter-item.selected {
+      background: #e10600;
+      color: #fff;
+      border: 2px solid #fff;
+    }
+    .bracket-container {
+      display: flex;
+      gap: 2rem;
+      overflow-x: auto;
+      padding: 1rem 0;
+      min-height: 400px;
+    }
+    .bracket-round {
+      min-width: 200px;
+      background: #222;
+      border-radius: 10px;
+      padding: 1rem;
+      border: 2px solid #444;
+    }
+    .bracket-round h4 {
+      color: #e10600;
+      text-align: center;
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+    .bracket-match {
+      background: #181818;
+      border: 2px solid #444;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      min-height: 60px;
+      position: relative;
+    }
+    .bracket-fighter {
+      background: #333;
+      border: 1px solid #666;
+      border-radius: 5px;
+      padding: 0.5rem;
+      margin: 0.25rem 0;
+      cursor: grab;
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .bracket-fighter:hover {
+      background: #444;
+      border-color: #e10600;
+    }
+    .bracket-fighter.dragging {
+      opacity: 0.5;
+      transform: rotate(5deg);
+    }
+    .bracket-fighter.winner {
+      background: #e10600;
+      border-color: #fff;
+      color: #fff;
+      font-weight: bold;
+    }
+    .bracket-fighter.by {
+      background: #666;
+      color: #999;
+      font-style: italic;
+    }
+    .bracket-fighter.empty-slot {
+      background: transparent;
+      border: 2px dashed #666;
+      color: #999;
+      font-style: italic;
+      cursor: pointer;
+    }
+    .bracket-fighter.empty-slot:hover {
+      border-color: #e10600;
+      background: #e1060011;
+    }
+    .bracket-fighter.dragging {
+      opacity: 0.5;
+      transform: rotate(5deg);
+    }
+    .bracket-match.drag-over {
+      border-color: #e10600;
+      background: #e1060011;
+    }
+    .bracket-fighter.drag-over {
+      border-color: #e10600;
+      background: #e1060011;
+    }
+    .bracket-match.completed {
+      border-color: #28a745;
+      background: linear-gradient(135deg, #222 0%, #1a3d1a 100%);
+    }
+    .bracket-match.completed .bracket-fighter {
+      opacity: 0.7;
+    }
+    .winner-buttons {
+      margin-top: 10px;
+      text-align: center;
+    }
+    .winner-buttons .btn {
+      font-size: 0.8rem;
+      padding: 0.3rem 0.6rem;
+    }
+    .match-result {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #e10600;
+      font-weight: bold;
+      margin: 0.25rem 0;
+    }
+    .drag-over {
+      border-color: #e10600 !important;
+      background: #e1060033 !important;
+    }
+    .btn-generate {
+      background: #e10600;
+      color: #fff;
+      border: none;
+      font-weight: 600;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+    }
+    .btn-generate:hover {
+      background: #b00500;
+    }
+    .btn-save {
+      background: #222;
+      color: #e10600;
+      border: none;
+      font-weight: 600;
+      border-radius: 10px;
+      margin-top: 1rem;
+    }
+    .btn-save:hover {
+      background: #e10600;
+      color: #fff;
+    }
+
+    /* New Bracket Visualization Styles */
+    #bracket-visual {
+      overflow-x: auto;
+      padding-bottom: 1rem;
+      scrollbar-width: thin;
+      scrollbar-color: #e10600 #222;
+    }
+    .bracket-container {
+      display: flex;
+      min-width: fit-content;
+    }
+    .round {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      flex-grow: 1;
+      min-width: 330px; /* Width of a match + spacing */
+      padding: 2rem 0;
+    }
+    .match {
+      position: relative;
+    }
+    .pair-container {
+      background: #181818;
+      border-radius: 10px;
+      padding: 0.8rem;
+      border: 1px solid #e1060033;
+      margin-right: 40px; /* Space for connector */
+      min-height: 130px; /* Ensure matches have height for lines */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .fighter-item.bye {
+      color: #777;
+      border-style: dashed;
+      justify-content: center;
+    }
+    .fighter-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .fighter-item button {
+      flex-shrink: 0;
+    }
+
+    /* Connector lines */
+    .connector {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 40px;
+      height: 100%;
+      z-index: 1;
+    }
+    .line-h {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: #e10600;
+      transform: translateY(-1px);
+    }
+    .line-v {
+      position: absolute;
+      left: 0;
+      width: 2px;
+      height: 50%;
+      background: #e10600;
+    }
+    .match:nth-child(odd) .line-v {
+      top: 50%;
+    }
+    .match:nth-child(even) .line-v {
+      bottom: 50%;
+    }
+    .match:last-child:nth-child(odd) .line-v {
+      display: none;
+    }
+    .round:last-child .connector {
+      display: none;
+    }
+
+    .bronze-container {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background: #222;
+      border-radius: 10px;
+    }
+
+    #sidebar {
+      width: 64px;
+      background: #181818cc;
+      transition: width 0.3s;
+      overflow: visible;
+      z-index: 10;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      box-shadow: 2px 0 16px #0002;
+    }
+    #sidebar .btn {
+      text-align: left;
+      padding-left: 1.2rem;
+      font-size: 1.08rem;
+      background: none;
+      border: none;
+      color: #fff;
+      width: 100%;
+      transition: background 0.2s, color 0.2s;
+      position: relative;
+    }
+    #sidebar .btn i {
+      font-size: 1.3rem;
+      vertical-align: middle;
+      transition: color 0.2s;
+    }
+    #sidebar .btn span {
+      display: none;
+      margin-left: 1.1rem;
+      white-space: nowrap;
+      transition: opacity 0.2s, margin 0.2s;
+      opacity: 0;
+    }
+    #sidebar:hover, #sidebar:focus-within {
+      width: 300px;
+      box-shadow: 0 8px 32px #e1060066;
+    }
+    #sidebar:hover .btn span, #sidebar:focus-within .btn span {
+      display: inline;
+      opacity: 1;
+      margin-left: 1.1rem;
+    }
+    #sidebar .btn:hover, #sidebar .btn:focus, #sidebar .btn.active {
+      background: #e10600;
+      color: #fff;
+    }
+    @media (max-width: 991px) {
+      #sidebar { width: 100vw; position: static; }
+      #sidebar .btn span { display: inline !important; opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="d-flex" style="min-height:100vh;">
+    <nav id="sidebar" class="bg-dark" style="position:relative; z-index:10;">
+      <ul class="nav flex-column pt-4" style="height:100vh;">
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Бойцы" onclick="location.href='/admin-fighters.html'"><i class="bi bi-person-fill"></i><span class="ms-3">Бойцы</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Тренеры" onclick="location.href='/admin-coaches.html'"><i class="bi bi-people-fill"></i><span class="ms-3">Тренеры</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Виды спорта" onclick="location.href='/admin-sports.html'"><i class="bi bi-award-fill"></i><span class="ms-3">Виды спорта</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Новости" onclick="location.href='/admin-news.html'"><i class="bi bi-newspaper"></i><span class="ms-3">Новости</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Турниры" onclick="location.href='/admin-tournaments.html'"><i class="bi bi-trophy-fill"></i><span class="ms-3">Турниры</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Турнирные сетки" onclick="location.href='/admin-brackets.html'"><i class="bi bi-diagram-3-fill"></i><span class="ms-3">Турнирные сетки</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Сохранённые сетки" onclick="location.href='/admin-brackets-list.html'"><i class="bi bi-archive-fill"></i><span class="ms-3">Сохранённые сетки</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Клубы" onclick="alert('Скоро!')"><i class="bi bi-building"></i><span class="ms-3">Клубы</span></button></li>
+        <li class="nav-item mt-auto mb-2"><button class="btn logout-btn w-100" id="logout"><i class="bi bi-box-arrow-right"></i><span class="ms-3">Выйти</span></button></li>
+      </ul>
+    </nav>
+    <div class="admin-card">
+      <h2 class="mb-4">Турнирные сетки</h2>
+      <div class="bracket-section mb-4">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Турнир</label>
+            <select class="form-select" id="select-tournament"></select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Вид спорта</label>
+            <select class="form-select" id="select-sport"></select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Вес (кг)</label>
+            <input type="number" class="form-control" id="select-weight" min="30" max="200" step="1" value="70">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Пол</label>
+            <select class="form-select" id="select-gender">
+              <option value="мужской">Мужской</option>
+              <option value="женский">Женский</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-generate w-100 mt-3" id="load-fighters">Показать бойцов</button>
+      </div>
+      <div id="fighters-block" style="display:none;">
+        <h5>Выберите участников турнира:</h5>
+        <div class="fighter-list" id="fighter-list"></div>
+        <button class="btn btn-generate" id="generate-bracket">Сгенерировать сетку</button>
+      </div>
+      <div id="bracket-block" style="display:none;">
+        <h5>Турнирная сетка:</h5>
+        <div class="bracket-container" id="bracket-visual"></div>
+        <div class="mt-3">
+        <button class="btn btn-save" id="save-bracket">Сохранить сетку</button>
+          <button class="btn btn-secondary ms-2" id="advance-round">Следующий раунд</button>
+          <button class="btn btn-info ms-2" id="complete-matches">Завершить матчи</button>
+          <button class="btn btn-warning ms-2" id="reset-bracket">Сбросить сетку</button>
+        </div>
+      </div>
+      <a href="/admin.html" class="btn btn-secondary w-100 mt-4">Назад в админ-панель</a>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    if (!localStorage.getItem('admin-auth')) {
+      window.location.href = '/login.html';
+    }
+    let tournaments = [], sports = [], fighters = [], selectedFighters = [], bracket = null, loadedBracket = null;
+    // Получение bracketId из URL
+    function getBracketIdFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('bracketId');
+    }
+    async function loadTournamentsAndSports() {
+      const tRes = await fetch('/api/tournaments');
+      tournaments = await tRes.json();
+      const sRes = await fetch('/api/sports');
+      sports = await sRes.json();
+      const tSel = document.getElementById('select-tournament');
+      tSel.innerHTML = tournaments.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+      const sSel = document.getElementById('select-sport');
+      sSel.innerHTML = sports.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+    }
+    async function loadBracketById(bracketId) {
+      const res = await fetch('/api/brackets');
+      const all = await res.json();
+      loadedBracket = all.find(b => b.id == bracketId);
+      if (!loadedBracket) return;
+      // Подставляем значения в форму
+      document.getElementById('select-tournament').value = loadedBracket.tournamentId;
+      document.getElementById('select-sport').value = loadedBracket.sport;
+      document.getElementById('select-weight').value = loadedBracket.weight;
+      document.getElementById('select-gender').value = loadedBracket.gender;
+      // Бойцы для отображения (выделяем выбранных)
+      const resF = await fetch(`/api/fighters?sport=${encodeURIComponent(loadedBracket.sport)}&weight=${encodeURIComponent(loadedBracket.weight)}&gender=${encodeURIComponent(loadedBracket.gender)}`);
+      fighters = await resF.json();
+      selectedFighters = loadedBracket.fighters.map(f => f.id);
+      bracket = loadedBracket.bracket && loadedBracket.bracket.rounds ? loadedBracket.bracket : { ...loadedBracket.bracket, rounds: loadedBracket.bracket.rounds || [] };
+      renderFighterList();
+      document.getElementById('fighters-block').style.display = '';
+      document.getElementById('bracket-block').style.display = '';
+      renderBracketTable();
+    }
+    // --- INIT ---
+    (async function init() {
+      await loadTournamentsAndSports();
+      const bracketId = getBracketIdFromUrl();
+      if (bracketId) {
+        await loadBracketById(bracketId);
+      }
+    })();
+    // Загрузка бойцов по фильтрам
+    document.getElementById('load-fighters').onclick = async function() {
+      const sport = document.getElementById('select-sport').value;
+      const weight = document.getElementById('select-weight').value;
+      const gender = document.getElementById('select-gender').value;
+      const res = await fetch(`/api/fighters?sport=${encodeURIComponent(sport)}&weight=${encodeURIComponent(weight)}&gender=${encodeURIComponent(gender)}`);
+      fighters = await res.json();
+      selectedFighters = [];
+      renderFighterList();
+      document.getElementById('fighters-block').style.display = '';
+      document.getElementById('bracket-block').style.display = 'none';
+    };
+    function renderFighterList() {
+      const list = document.getElementById('fighter-list');
+      list.innerHTML = '';
+      fighters.forEach(f => {
+        const div = document.createElement('div');
+        div.className = 'fighter-item' + (selectedFighters.includes(f.id) ? ' selected' : '');
+        div.textContent = `${f.name} (${f.club || '-'})`;
+        div.onclick = () => {
+          if (selectedFighters.includes(f.id)) {
+            selectedFighters = selectedFighters.filter(id => id !== f.id);
+          } else {
+            selectedFighters.push(f.id);
+          }
+          renderFighterList();
+        };
+        list.appendChild(div);
+      });
+    }
+    // Генерация первого раунда с учётом клубов
+    function generateFirstRoundNoTeammates(fighters) {
+      // Жадный алгоритм: по кругу берём бойцов из разных клубов
+      const pool = [...fighters];
+      const pairs = [];
+      while (pool.length > 1) {
+        const f1 = pool.shift();
+        let idx = pool.findIndex(f => f.club !== f1.club);
+        if (idx === -1) idx = 0; // если все из одной команды
+        const f2 = pool.splice(idx, 1)[0];
+        pairs.push([f1, f2]);
+      }
+      if (pool.length === 1) pairs.push([pool[0]]);
+      return pairs;
+    }
+    // Кнопка генерации сетки
+    document.getElementById('generate-bracket').onclick = async function() {
+      const selected = fighters.filter(f => selectedFighters.includes(f.id));
+      if (selected.length < 2) {
+        alert('Выберите минимум двух бойцов!');
+        return;
+      }
+      
+      // Создаем новую структуру турнирной сетки
+      bracket = generateTournamentBracket(selected);
+      renderBracketTable();
+      document.getElementById('bracket-block').style.display = '';
+    };
+    
+    // Генерация турнирной сетки
+    function generateTournamentBracket(fighters) {
+      const rounds = [];
+      let currentFighters = [...fighters];
+      
+      // Первый раунд
+      const firstRound = {
+        matches: []
+      };
+      
+      // Создаем пары для первого раунда
+      const pairs = generateFirstRoundNoTeammates(currentFighters);
+      pairs.forEach(pair => {
+        const match = {
+          fighters: pair,
+          result: null
+        };
+        firstRound.matches.push(match);
+      });
+      
+      rounds.push(firstRound);
+      
+      // Создаем пустые раунды для будущих этапов
+      let remainingFighters = currentFighters.length;
+      while (remainingFighters > 1) {
+        remainingFighters = Math.ceil(remainingFighters / 2);
+        const nextRound = {
+          matches: []
+        };
+        
+        // Создаем пустые матчи для следующего раунда
+        for (let i = 0; i < remainingFighters; i++) {
+          nextRound.matches.push({
+            fighters: [null, null],
+            result: null
+          });
+        }
+        
+        rounds.push(nextRound);
+      }
+      
+      return { rounds };
+    }
+    // Визуализация и формирование следующих раундов
+    function renderBracketVisual() {
+      const container = document.getElementById('bracket-visual');
+      container.innerHTML = '';
+      let rounds = bracket.rounds;
+
+      // Формируем новые раунды из победителей, если все пары завершены
+      for (let r = 0; r < rounds.length; r++) {
+        const curr = rounds[r];
+        if (
+          r === rounds.length - 1 &&
+          curr.every(pair => (pair.length === 2 ? typeof pair._winner === 'number' : true)) &&
+          curr.length > 1
+        ) {
+          const winners = curr.map(pair => (pair.length === 2 ? pair[pair._winner] : pair[0]));
+          const nextRound = [];
+          for (let i = 0; i < winners.length; i += 2) {
+            if (i + 1 < winners.length) nextRound.push([winners[i], winners[i + 1]]);
+            else nextRound.push([winners[i]]);
+          }
+          rounds.push(nextRound);
+        }
+      }
+
+      // Малый финал (бой за 3 место)
+      let bronzePair = null;
+      if (
+        rounds.length >= 3 &&
+        rounds[rounds.length - 2].length === 2 &&
+        rounds[rounds.length - 2].every(pair => typeof pair._winner === 'number') &&
+        !bracket.bronzePair // чтобы не перезаписывать результат
+      ) {
+        const semi = rounds[rounds.length - 2];
+        const losers = semi.map(pair => pair[1 - pair._winner]);
+        if (losers.length === 2) {
+          bronzePair = losers;
+          bracket.bronzePair = bronzePair; // Сохраняем в объекте сетки
+        }
+      } else if (bracket.bronzePair) {
+        bronzePair = bracket.bronzePair;
+      }
+
+      // --- Рендер дерева ---
+      const bracketContainer = document.createElement('div');
+      bracketContainer.className = 'bracket-container';
+
+      rounds.forEach((round, roundIndex) => {
+        const roundDiv = document.createElement('div');
+        roundDiv.className = 'round';
+        roundDiv.innerHTML = `<h5>${roundIndex === rounds.length - 1 ? 'Финал' : `Раунд ${roundIndex + 1}`}</h5>`;
+
+        const matchesContainer = document.createElement('div');
+        matchesContainer.style.display = 'flex';
+        matchesContainer.style.flexDirection = 'column';
+        matchesContainer.style.justifyContent = 'space-around';
+        matchesContainer.style.flexGrow = '1';
+
+        round.forEach((pair, pairIndex) => {
+          const matchDiv = document.createElement('div');
+          matchDiv.className = 'match';
+
+          const pairContainer = document.createElement('div');
+          pairContainer.className = 'pair-container';
+
+          if (Array.isArray(pair)) {
+            pair.forEach((f, idx) => {
+              if (!f) return;
+              const div = document.createElement('div');
+              div.className = 'fighter-item' + (pair._winner === idx ? ' winner' : '');
+              div.textContent = f.name + (f.club ? ` (${f.club})` : '');
+              
+              if (pair.length === 2 && pair[0] && pair[1]) {
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-sm ms-2 ' + (pair._winner === idx ? 'btn-danger' : 'btn-outline-danger');
+                btn.textContent = '👑';
+                btn.disabled = typeof pair._winner === 'number';
+                btn.onclick = () => {
+                  pair._winner = idx;
+                  renderBracketVisual();
+                };
+                div.appendChild(btn);
+              }
+              pairContainer.appendChild(div);
+            });
+
+            if (pair.length === 1) {
+              const placeholder = document.createElement('div');
+              placeholder.className = 'fighter-item bye';
+              placeholder.textContent = '(без пары)';
+              pairContainer.appendChild(placeholder);
+            }
+          }
+          matchDiv.appendChild(pairContainer);
+
+          if (roundIndex < rounds.length - 1) {
+            const connector = document.createElement('div');
+            connector.className = 'connector';
+            connector.innerHTML = `<div class="line-h"></div><div class="line-v"></div>`;
+            matchDiv.appendChild(connector);
+          }
+          matchesContainer.appendChild(matchDiv);
+        });
+        roundDiv.appendChild(matchesContainer);
+        bracketContainer.appendChild(roundDiv);
+      });
+      container.appendChild(bracketContainer);
+
+      // --- Рендер боя за 3 место ---
+      if (bronzePair) {
+        const bronzeContainer = document.createElement('div');
+        bronzeContainer.className = 'bronze-container';
+        bronzeContainer.innerHTML = '<h5>Бой за 3 место</h5>';
+        
+        const pairContainer = document.createElement('div');
+        pairContainer.className = 'pair-container';
+        
+        bronzePair.forEach((f, idx) => {
+           if (!f) return;
+            const div = document.createElement('div');
+            div.className = 'fighter-item' + (bronzePair._winner === idx ? ' winner' : '');
+            div.textContent = f.name + (f.club ? ` (${f.club})` : '');
+
+            if (bronzePair.length === 2) {
+              const btn = document.createElement('button');
+              btn.className = 'btn btn-sm ms-2 ' + (bronzePair._winner === idx ? 'btn-danger' : 'btn-outline-danger');
+              btn.textContent = '👑';
+              btn.disabled = typeof bronzePair._winner === 'number';
+              btn.onclick = () => {
+                bronzePair._winner = idx;
+                renderBracketVisual();
+              };
+              div.appendChild(btn);
+            }
+            pairContainer.appendChild(div);
+        });
+        bronzeContainer.appendChild(pairContainer);
+        container.appendChild(bronzeContainer);
+      }
+    }
+
+    // Новая система турнирной сетки с перетаскиванием
+    function renderBracketTable() {
+      const container = document.getElementById('bracket-visual');
+      container.innerHTML = '';
+      
+      if (!bracket || !bracket.rounds || bracket.rounds.length === 0) {
+        container.innerHTML = '<p>Сетка не сгенерирована</p>';
+        return;
+      }
+      
+      // Создаем раунды
+      bracket.rounds.forEach((round, roundIndex) => {
+        const roundDiv = document.createElement('div');
+        roundDiv.className = 'bracket-round';
+        roundDiv.innerHTML = `<h4>Раунд ${roundIndex + 1}</h4>`;
+        
+        // Создаем матчи в раунде
+        round.matches.forEach((match, matchIndex) => {
+          const matchDiv = document.createElement('div');
+          matchDiv.className = 'bracket-match';
+          if (match.winner !== undefined || match.result) {
+            matchDiv.classList.add('completed');
+          }
+          matchDiv.dataset.roundIndex = roundIndex;
+          matchDiv.dataset.matchIndex = matchIndex;
+          
+          // Добавляем бойцов в матч
+          match.fighters.forEach((fighter, fighterIndex) => {
+            if (fighter) {
+              const fighterDiv = document.createElement('div');
+              fighterDiv.className = 'bracket-fighter';
+              fighterDiv.draggable = true;
+              fighterDiv.dataset.fighterId = fighter.id;
+              fighterDiv.dataset.fighterIndex = fighterIndex;
+              fighterDiv.textContent = fighter.name;
+              
+              if (fighter.winner) {
+                fighterDiv.classList.add('winner');
+              }
+              if (fighter.by) {
+                fighterDiv.classList.add('by');
+                fighterDiv.textContent = 'BYE';
+              }
+              
+              // Добавляем обработчики перетаскивания
+              addDragHandlers(fighterDiv, matchDiv);
+              
+              matchDiv.appendChild(fighterDiv);
+            } else {
+              // Создаем пустую ячейку для перетаскивания
+              const emptyDiv = document.createElement('div');
+              emptyDiv.className = 'bracket-fighter empty-slot';
+              emptyDiv.textContent = 'Перетащите сюда';
+              emptyDiv.style.opacity = '0.5';
+              emptyDiv.style.borderStyle = 'dashed';
+              emptyDiv.dataset.fighterIndex = fighterIndex;
+              
+              // Добавляем обработчики для пустых ячеек
+              addEmptySlotHandlers(emptyDiv, matchDiv);
+              
+              matchDiv.appendChild(emptyDiv);
+            }
+          });
+          
+          // Добавляем дополнительные пустые ячейки для перетаскивания (минимум 2)
+          const currentFighters = match.fighters.filter(f => f !== null).length;
+          const emptySlots = Math.max(0, 2 - currentFighters);
+          
+          for (let i = 0; i < emptySlots; i++) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'bracket-fighter empty-slot';
+            emptyDiv.textContent = 'Перетащите сюда';
+            emptyDiv.style.opacity = '0.5';
+            emptyDiv.style.borderStyle = 'dashed';
+            emptyDiv.dataset.fighterIndex = match.fighters.length + i;
+            
+            // Добавляем обработчики для пустых ячеек
+            addEmptySlotHandlers(emptyDiv, matchDiv);
+            
+            matchDiv.appendChild(emptyDiv);
+          }
+          
+          // Добавляем кнопки для определения победителя (только если в матче 2 бойца)
+          const activeFighters = match.fighters.filter(f => f && !f.by);
+          if (activeFighters.length === 2 && !match.winner) {
+            const winnerButtonsDiv = document.createElement('div');
+            winnerButtonsDiv.className = 'winner-buttons';
+            winnerButtonsDiv.style.marginTop = '10px';
+            winnerButtonsDiv.style.textAlign = 'center';
+            
+            activeFighters.forEach((fighter, index) => {
+              const button = document.createElement('button');
+              button.className = 'btn btn-sm btn-success me-2';
+              button.textContent = `Победа: ${fighter.name}`;
+              button.onclick = () => setMatchWinner(roundIndex, matchIndex, index);
+              winnerButtonsDiv.appendChild(button);
+            });
+            
+            matchDiv.appendChild(winnerButtonsDiv);
+          }
+          
+          // Показываем информацию о завершенном матче
+          if (match.winner !== undefined) {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'match-result';
+            resultDiv.textContent = `Победитель: ${activeFighters[match.winner]?.name || 'Не определен'}`;
+            resultDiv.style.color = '#e10600';
+            resultDiv.style.fontWeight = 'bold';
+            resultDiv.style.marginTop = '10px';
+            matchDiv.appendChild(resultDiv);
+          }
+          
+          // Показываем результат матча
+          if (match.result) {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'match-result';
+            resultDiv.textContent = match.result;
+            resultDiv.style.color = '#e10600';
+            resultDiv.style.fontWeight = 'bold';
+            resultDiv.style.marginTop = '10px';
+            matchDiv.appendChild(resultDiv);
+          }
+          
+          roundDiv.appendChild(matchDiv);
+        });
+        
+        container.appendChild(roundDiv);
+      });
+    }
+    
+    // Добавление обработчиков перетаскивания
+    function addDragHandlers(fighterElement, matchElement) {
+      // Очищаем старые обработчики
+      fighterElement.removeEventListener('dragstart', handleDragStart);
+      fighterElement.removeEventListener('dragend', handleDragEnd);
+      
+      // Добавляем новые обработчики
+      fighterElement.addEventListener('dragstart', handleDragStart);
+      fighterElement.addEventListener('dragend', handleDragEnd);
+      
+      // Обработчики для контейнера матча
+      matchElement.removeEventListener('dragover', handleDragOver);
+      matchElement.removeEventListener('dragleave', handleDragLeave);
+      matchElement.removeEventListener('drop', handleDrop);
+      
+      matchElement.addEventListener('dragover', handleDragOver);
+      matchElement.addEventListener('dragleave', handleDragLeave);
+      matchElement.addEventListener('drop', handleDrop);
+    }
+    
+    // Обработчики событий перетаскивания
+    function handleDragStart(e) {
+      console.log('Начало перетаскивания:', this.dataset.fighterId);
+      this.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', JSON.stringify({
+        fighterId: this.dataset.fighterId,
+        fighterIndex: this.dataset.fighterIndex,
+        roundIndex: this.closest('.bracket-match').dataset.roundIndex,
+        matchIndex: this.closest('.bracket-match').dataset.matchIndex
+      }));
+    }
+    
+    function handleDragEnd(e) {
+      console.log('Конец перетаскивания');
+      this.classList.remove('dragging');
+    }
+    
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      this.classList.add('drag-over');
+    }
+    
+    function handleDragLeave(e) {
+      this.classList.remove('drag-over');
+    }
+    
+    function handleDrop(e) {
+      e.preventDefault();
+      this.classList.remove('drag-over');
+      
+      console.log('Drop event triggered');
+      
+      try {
+        const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+        const targetRoundIndex = parseInt(this.dataset.roundIndex);
+        const targetMatchIndex = parseInt(this.dataset.matchIndex);
+        
+        console.log('Moving fighter:', data, 'to round:', targetRoundIndex, 'match:', targetMatchIndex);
+        
+        // Перемещаем бойца
+        moveFighter(data, targetRoundIndex, targetMatchIndex);
+      } catch (error) {
+        console.error('Error in drop handler:', error);
+      }
+    }
+    
+    // Добавление обработчиков для пустых ячеек
+    function addEmptySlotHandlers(emptyElement, matchElement) {
+      // Очищаем старые обработчики
+      emptyElement.removeEventListener('dragover', handleEmptyDragOver);
+      emptyElement.removeEventListener('dragleave', handleEmptyDragLeave);
+      emptyElement.removeEventListener('drop', handleEmptyDrop);
+      
+      // Добавляем новые обработчики
+      emptyElement.addEventListener('dragover', handleEmptyDragOver);
+      emptyElement.addEventListener('dragleave', handleEmptyDragLeave);
+      emptyElement.addEventListener('drop', handleEmptyDrop);
+    }
+    
+    // Обработчики для пустых ячеек
+    function handleEmptyDragOver(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      this.classList.add('drag-over');
+      this.style.backgroundColor = '#e1060033';
+      console.log('Empty slot drag over:', this.dataset.fighterIndex);
+    }
+    
+    function handleEmptyDragLeave(e) {
+      this.classList.remove('drag-over');
+      this.style.backgroundColor = '';
+      console.log('Empty slot drag leave');
+    }
+    
+    function handleEmptyDrop(e) {
+      e.preventDefault();
+      this.classList.remove('drag-over');
+      this.style.backgroundColor = '';
+      
+      console.log('Empty slot drop event triggered');
+      
+      try {
+        const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+        const targetRoundIndex = parseInt(this.closest('.bracket-match').dataset.roundIndex);
+        const targetMatchIndex = parseInt(this.closest('.bracket-match').dataset.matchIndex);
+        const targetFighterIndex = parseInt(this.dataset.fighterIndex);
+        
+        console.log('Moving fighter to position:', data, 'to round:', targetRoundIndex, 'match:', targetMatchIndex, 'position:', targetFighterIndex);
+        
+        // Перемещаем бойца в конкретную позицию
+        moveFighterToPosition(data, targetRoundIndex, targetMatchIndex, targetFighterIndex);
+      } catch (error) {
+        console.error('Error in empty slot drop handler:', error);
+      }
+    }
+    
+    // Перемещение бойца в турнирной сетке
+    function moveFighter(data, targetRoundIndex, targetMatchIndex) {
+      console.log('moveFighter called with:', data, 'target:', targetRoundIndex, targetMatchIndex);
+      
+      const sourceRoundIndex = parseInt(data.roundIndex);
+      const sourceMatchIndex = parseInt(data.matchIndex);
+      const fighterId = parseInt(data.fighterId);
+      
+      console.log('Source:', sourceRoundIndex, sourceMatchIndex, 'Target:', targetRoundIndex, targetMatchIndex);
+      
+      // Добавляем бойца в новое место (НЕ удаляем из старого)
+      if (bracket.rounds[targetRoundIndex] && bracket.rounds[targetRoundIndex].matches[targetMatchIndex]) {
+        const targetMatch = bracket.rounds[targetRoundIndex].matches[targetMatchIndex];
+        const fighter = fighters.find(f => f.id == fighterId);
+        
+        if (!fighter) {
+          console.error('Fighter not found:', fighterId);
+          return;
+        }
+        
+        console.log('Moving fighter:', fighter.name);
+        
+        // Находим свободное место в матче
+        let freeIndex = targetMatch.fighters.findIndex(f => f === null);
+        if (freeIndex === -1) {
+          freeIndex = targetMatch.fighters.length;
+          targetMatch.fighters.push(null);
+        }
+        
+        targetMatch.fighters[freeIndex] = fighter;
+        console.log('Fighter placed at index:', freeIndex);
+        
+        // Если боец перетаскивается на следующий этап, засчитываем победу
+        if (targetRoundIndex > sourceRoundIndex) {
+          console.log(`Боец ${fighter.name} перемещен на следующий этап`);
+          
+          // Засчитываем победу при перетаскивании на следующий раунд
+          handleDragToNextRound(fighterId, sourceRoundIndex, sourceMatchIndex);
+          
+          // Автоматически продвигаем бойца в следующий раунд
+          advanceFighterToNextRound(fighterId, targetRoundIndex, targetMatchIndex);
+        }
+      } else {
+        console.error('Target match not found:', targetRoundIndex, targetMatchIndex);
+      }
+      
+      // Очищаем дубликаты и перерисовываем сетку
+      cleanDuplicateFighters();
+      renderBracketTable();
+    }
+    
+    // Удаление бойца из всех матчей (избегаем дублирования)
+    function removeFighterFromAllMatches(fighterId) {
+      bracket.rounds.forEach(round => {
+        round.matches.forEach(match => {
+          match.fighters.forEach((fighter, index) => {
+            if (fighter && fighter.id == fighterId) {
+              match.fighters[index] = null;
+            }
+          });
+        });
+      });
+    }
+    
+    // Очистка дубликатов бойцов в сетке
+    function cleanDuplicateFighters() {
+      const fighterPositions = new Map(); // fighterId -> {roundIndex, matchIndex, fighterIndex}
+      
+      bracket.rounds.forEach((round, roundIndex) => {
+        round.matches.forEach((match, matchIndex) => {
+          match.fighters.forEach((fighter, fighterIndex) => {
+            if (fighter) {
+              const fighterId = fighter.id;
+              
+              if (fighterPositions.has(fighterId)) {
+                // Боец уже есть в другом месте, удаляем дубликат
+                console.log(`Удаляем дубликат бойца ${fighter.name} из раунда ${roundIndex + 1}`);
+                match.fighters[fighterIndex] = null;
+              } else {
+                // Запоминаем позицию бойца
+                fighterPositions.set(fighterId, {
+                  roundIndex,
+                  matchIndex,
+                  fighterIndex
+                });
+              }
+            }
+          });
+        });
+      });
+    }
+    
+    // Перемещение бойца в конкретную позицию
+    function moveFighterToPosition(data, targetRoundIndex, targetMatchIndex, targetFighterIndex) {
+      console.log('moveFighterToPosition called with:', data, 'target:', targetRoundIndex, targetMatchIndex, 'position:', targetFighterIndex);
+      
+      const sourceRoundIndex = parseInt(data.roundIndex);
+      const sourceMatchIndex = parseInt(data.matchIndex);
+      const fighterId = parseInt(data.fighterId);
+      
+      // Добавляем бойца в конкретную позицию (НЕ удаляем из старого)
+      if (bracket.rounds[targetRoundIndex] && bracket.rounds[targetRoundIndex].matches[targetMatchIndex]) {
+        const targetMatch = bracket.rounds[targetRoundIndex].matches[targetMatchIndex];
+        const fighter = fighters.find(f => f.id == fighterId);
+        
+        if (!fighter) {
+          console.error('Fighter not found:', fighterId);
+          return;
+        }
+        
+        console.log('Moving fighter to position:', fighter.name, 'at index:', targetFighterIndex);
+        
+        // Убеждаемся, что массив достаточно длинный
+        while (targetMatch.fighters.length <= targetFighterIndex) {
+          targetMatch.fighters.push(null);
+        }
+        
+        targetMatch.fighters[targetFighterIndex] = fighter;
+        console.log('Fighter placed at position:', targetFighterIndex);
+        
+        // Если боец перетаскивается на следующий этап, засчитываем победу
+        if (targetRoundIndex > sourceRoundIndex) {
+          console.log(`Боец ${fighter.name} перемещен на следующий этап`);
+          
+          // Засчитываем победу при перетаскивании на следующий раунд
+          handleDragToNextRound(fighterId, sourceRoundIndex, sourceMatchIndex);
+          
+          // Автоматически продвигаем бойца в следующий раунд
+          advanceFighterToNextRound(fighterId, targetRoundIndex, targetMatchIndex);
+        }
+      } else {
+        console.error('Target match not found:', targetRoundIndex, targetMatchIndex);
+      }
+      
+      // Очищаем дубликаты и перерисовываем сетку
+      cleanDuplicateFighters();
+      renderBracketTable();
+    }
+    
+    // Обработка перетаскивания на следующий раунд с засчетом победы
+    async function handleDragToNextRound(fighterId, sourceRoundIndex, sourceMatchIndex) {
+      try {
+        const sourceMatch = bracket.rounds[sourceRoundIndex].matches[sourceMatchIndex];
+        const fighter = fighters.find(f => f.id == fighterId);
+        
+        if (!fighter || !sourceMatch) return;
+        
+        // Находим соперника в исходном матче
+        const opponent = sourceMatch.fighters.find(f => f && f.id != fighterId);
+        
+        if (opponent) {
+          // Обновляем рекорды: перетащенный боец побеждает, соперник проигрывает
+          await fetch('/api/fighters/update-records', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              winnerId: fighterId,
+              loserId: opponent.id,
+              fightDate: new Date().toISOString(),
+              tournamentName: document.getElementById('select-tournament').value || 'Турнир',
+              sport: document.getElementById('select-sport').value || 'Тхэквондо',
+              weight: document.getElementById('select-weight').value || 70,
+              round: `Раунд ${sourceRoundIndex + 1}`
+            })
+          });
+          
+          // Обновляем данные бойцов в локальном массиве
+          fighter.wins = (fighter.wins || 0) + 1;
+          opponent.losses = (opponent.losses || 0) + 1;
+          
+          // Помечаем матч как завершенный
+          sourceMatch.winner = sourceMatch.fighters.findIndex(f => f && f.id == fighterId);
+          sourceMatch.result = `Победитель: ${fighter.name}`;
+          
+          console.log(`Перетаскивание: ${fighter.name} побеждает ${opponent.name} и проходит в следующий этап`);
+        } else {
+          // Если соперника нет (один боец), просто помечаем матч как завершенный
+          sourceMatch.winner = sourceMatch.fighters.findIndex(f => f && f.id == fighterId);
+          sourceMatch.result = `Победитель: ${fighter.name}`;
+          
+          console.log(`Перетаскивание: ${fighter.name} проходит в следующий этап (без соперника)`);
+        }
+      } catch (error) {
+        console.error('Ошибка при обработке перетаскивания:', error);
+      }
+    }
+    
+    // Автоматическое продвижение бойца в следующий раунд
+    function advanceFighterToNextRound(fighterId, targetRoundIndex, targetMatchIndex) {
+      const fighter = fighters.find(f => f.id == fighterId);
+      if (!fighter) return;
+      
+      // Находим следующий раунд после целевого
+      const nextRoundIndex = targetRoundIndex + 1;
+      if (nextRoundIndex < bracket.rounds.length) {
+        const nextRound = bracket.rounds[nextRoundIndex];
+        
+        // Находим свободное место в следующем раунде
+        let freeMatch = nextRound.matches.find(match => 
+          match.fighters.some(f => f === null)
+        );
+        
+        if (freeMatch) {
+          const freeIndex = freeMatch.fighters.findIndex(f => f === null);
+          if (freeIndex !== -1) {
+            // Проверяем, что боец еще не находится в этом матче
+            const alreadyExists = freeMatch.fighters.some(f => f && f.id == fighterId);
+            if (!alreadyExists) {
+              freeMatch.fighters[freeIndex] = fighter;
+              console.log(`${fighter.name} автоматически продвинут в раунд ${nextRoundIndex + 1}`);
+            }
+          }
+        }
+      }
+    }
+    
+    // Продвижение победителя матча в следующий раунд
+    function advanceWinnerToNextRound(winner, currentRoundIndex) {
+      const nextRoundIndex = currentRoundIndex + 1;
+      if (nextRoundIndex < bracket.rounds.length) {
+        const nextRound = bracket.rounds[nextRoundIndex];
+        
+        // Находим свободное место в следующем раунде
+        let freeMatch = nextRound.matches.find(match => 
+          match.fighters.some(f => f === null)
+        );
+        
+        if (freeMatch) {
+          const freeIndex = freeMatch.fighters.findIndex(f => f === null);
+          if (freeIndex !== -1) {
+            freeMatch.fighters[freeIndex] = winner;
+            console.log(`Победитель ${winner.name} автоматически продвинут в раунд ${nextRoundIndex + 1}`);
+          }
+        }
+      }
+    }
+    
+    // Обработка продвижения бойца на следующий этап (только при правильном определении победителя)
+    async function handleFighterAdvancement(fighterId, opponentId, isWinner, roundNumber = 1) {
+      try {
+        if (!isWinner) return; // Засчитываем только если это действительно победитель
+        
+        const fighter = fighters.find(f => f.id == fighterId);
+        const opponent = fighters.find(f => f.id == opponentId);
+        
+        if (!fighter || !opponent) return;
+        
+        // Обновляем рекорды: победитель получает победу, проигравший - поражение
+        await fetch('/api/fighters/update-records', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            winnerId: fighterId,
+            loserId: opponentId,
+            fightDate: new Date().toISOString(),
+            tournamentName: document.getElementById('select-tournament').value || 'Турнир',
+            sport: document.getElementById('select-sport').value || 'Бокс',
+            weight: document.getElementById('select-weight').value || 70,
+            round: `Раунд ${roundNumber}`
+          })
+        });
+        
+        // Обновляем данные бойцов в локальном массиве
+        fighter.wins = (fighter.wins || 0) + 1;
+        opponent.losses = (opponent.losses || 0) + 1;
+        
+        console.log(`${fighter.name} побеждает ${opponent.name} и проходит в следующий этап`);
+      } catch (error) {
+        console.error('Ошибка при обновлении рекордов:', error);
+      }
+    }
+    
+    // Установка победителя матча
+    async function setMatchWinner(roundIndex, matchIndex, winnerIndex) {
+      try {
+        const match = bracket.rounds[roundIndex].matches[matchIndex];
+        const activeFighters = match.fighters.filter(f => f && !f.by);
+        
+        if (activeFighters.length !== 2) return;
+        
+        const winner = activeFighters[winnerIndex];
+        const loser = activeFighters[1 - winnerIndex];
+        
+        // Обновляем рекорды через правильную функцию
+        await handleFighterAdvancement(winner.id, loser.id, true, roundIndex + 1);
+        
+        // Помечаем победителя в матче
+        match.winner = winnerIndex;
+        match.result = `Победитель: ${winner.name}`;
+        
+        // Автоматически продвигаем победителя в следующий раунд
+        advanceWinnerToNextRound(winner, roundIndex);
+        
+        console.log(`Матч завершен: ${winner.name} побеждает ${loser.name}`);
+        
+        // Перерисовываем сетку
+        renderBracketTable();
+        
+      } catch (error) {
+        console.error('Ошибка при установке победителя:', error);
+      }
+    }
+    
+    // Автоматическое продвижение бойцов без пары
+    function advanceByes() {
+      if (!bracket || !bracket.rounds) return;
+      
+      bracket.rounds.forEach((round, roundIndex) => {
+        round.matches.forEach((match, matchIndex) => {
+          const activeFighters = match.fighters.filter(f => f && !f.by);
+          
+          // Если в матче только один активный боец, продвигаем его
+          if (activeFighters.length === 1) {
+            const nextRound = bracket.rounds[roundIndex + 1];
+            if (nextRound) {
+              // Находим следующий матч для этого бойца
+              const nextMatch = nextRound.matches.find(m => 
+                m.fighters.some(f => f === null)
+              );
+              
+              if (nextMatch) {
+                const freeIndex = nextMatch.fighters.findIndex(f => f === null);
+                if (freeIndex !== -1) {
+                  nextMatch.fighters[freeIndex] = activeFighters[0];
+                  // Помечаем как BYE в текущем раунде
+                  match.fighters.forEach(f => {
+                    if (f && f.id === activeFighters[0].id) {
+                      f.by = true;
+                    }
+                  });
+                  
+                  console.log(`${activeFighters[0].name} автоматически продвинут в раунд ${roundIndex + 2}`);
+                }
+              }
+            }
+          }
+        });
+      });
+    }
+    // Сохранение сетки
+    document.getElementById('save-bracket').onclick = async function() {
+      const tournamentId = document.getElementById('select-tournament').value;
+      const sport = document.getElementById('select-sport').value;
+      const weight = document.getElementById('select-weight').value;
+      const gender = document.getElementById('select-gender').value;
+      // Сохраняем id бойцов и структуру сетки
+      const fightersData = fighters.filter(f => selectedFighters.includes(f.id));
+      await fetch('/api/brackets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tournamentId,
+          sport,
+          weight,
+          gender,
+          fighters: fightersData,
+          bracket
+        })
+      });
+      alert('Сетка сохранена!');
+    };
+    
+    // Следующий раунд
+    document.getElementById('advance-round').onclick = function() {
+      advanceByes();
+      renderBracketTable();
+    };
+    
+    // Кнопка для завершения всех незавершенных матчей
+    document.getElementById('complete-matches').onclick = function() {
+      if (confirm('Завершить все матчи? Это засчитает победы/поражения бойцам.')) {
+        completeAllMatches();
+      }
+    };
+    
+    // Завершение всех матчей
+    async function completeAllMatches() {
+      if (!bracket || !bracket.rounds) return;
+      
+      for (let roundIndex = 0; roundIndex < bracket.rounds.length; roundIndex++) {
+        const round = bracket.rounds[roundIndex];
+        for (let matchIndex = 0; matchIndex < round.matches.length; matchIndex++) {
+          const match = round.matches[matchIndex];
+          const activeFighters = match.fighters.filter(f => f && !f.by);
+          
+          // Если в матче 2 бойца и победитель не определен
+          if (activeFighters.length === 2 && match.winner === undefined) {
+            // Случайно выбираем победителя (можно заменить на другую логику)
+            const winnerIndex = Math.random() < 0.5 ? 0 : 1;
+            const winner = activeFighters[winnerIndex];
+            
+            // Устанавливаем победителя
+            match.winner = winnerIndex;
+            match.result = `Победитель: ${winner.name}`;
+            
+            // Обновляем рекорды
+            await handleFighterAdvancement(winner.id, activeFighters[1 - winnerIndex].id, true, roundIndex + 1);
+            
+            // Продвигаем победителя в следующий раунд
+            advanceWinnerToNextRound(winner, roundIndex);
+          }
+        }
+      }
+      
+      renderBracketTable();
+    }
+    
+    // Сброс сетки
+    document.getElementById('reset-bracket').onclick = function() {
+      if (confirm('Вы уверены, что хотите сбросить турнирную сетку?')) {
+        bracket = null;
+        renderBracketTable();
+      }
+    };
+
+    document.getElementById('logout').onclick = function() {
+      localStorage.removeItem('admin-auth');
+      window.location.href = '/login.html';
+    };
+  </script>
+</body>
+</html> 

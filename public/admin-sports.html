@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админ: Виды спорта — Sherdoc</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #111 60%, #e10600 100%);
+      color: #fff;
+      min-height: 100vh;
+    }
+    .admin-card {
+      background: #181818cc;
+      border-radius: 18px;
+      box-shadow: 0 4px 24px #e1060033;
+      padding: 2.5rem 2rem 2rem 2rem;
+      width: 100%;
+      max-width: 900px;
+      margin: 3rem auto;
+    }
+    .sport-row {
+      background: #222;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .sport-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .sport-img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 2px solid #e10600;
+      background: #fff;
+    }
+    .sport-name {
+      font-weight: 700;
+      color: #e10600;
+      font-size: 1.1rem;
+    }
+    .sport-meta {
+      color: #e0e0e0;
+      font-size: 0.95rem;
+    }
+    .admin-btn {
+      border-radius: 10px;
+      font-weight: 600;
+      margin-left: 0.5rem;
+      background: #e10600;
+      border: none;
+      color: #fff;
+      transition: background 0.2s;
+      padding: 0.4rem 1.1rem;
+    }
+    .admin-btn:hover {
+      background: #b00500;
+      color: #fff;
+    }
+    .add-btn {
+      margin-bottom: 1.5rem;
+      background: #222;
+      color: #e10600;
+      border: none;
+    }
+    .add-btn:hover {
+      background: #e10600;
+      color: #fff;
+    }
+    #sidebar {
+      width: 64px;
+      background: #181818cc;
+      transition: width 0.3s;
+      overflow: visible;
+      z-index: 10;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      box-shadow: 2px 0 16px #0002;
+    }
+    #sidebar .btn {
+      text-align: left;
+      padding-left: 1.2rem;
+      font-size: 1.08rem;
+      background: none;
+      border: none;
+      color: #fff;
+      width: 100%;
+      transition: background 0.2s, color 0.2s;
+      position: relative;
+    }
+    #sidebar .btn i {
+      font-size: 1.3rem;
+      vertical-align: middle;
+      transition: color 0.2s;
+    }
+    #sidebar .btn span {
+      display: none;
+      margin-left: 1.1rem;
+      white-space: nowrap;
+      transition: opacity 0.2s, margin 0.2s;
+      opacity: 0;
+    }
+    #sidebar:hover, #sidebar:focus-within {
+      width: 300px;
+      box-shadow: 0 8px 32px #e1060066;
+    }
+    #sidebar:hover .btn span, #sidebar:focus-within .btn span {
+      display: inline;
+      opacity: 1;
+      margin-left: 1.1rem;
+    }
+    #sidebar .btn:hover, #sidebar .btn:focus, #sidebar .btn.active {
+      background: #e10600;
+      color: #fff;
+    }
+    @media (max-width: 991px) {
+      #sidebar { width: 100vw; position: static; }
+      #sidebar .btn span { display: inline !important; opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="d-flex" style="min-height:100vh;">
+    <nav id="sidebar" class="bg-dark" style="position:relative; z-index:10;">
+      <ul class="nav flex-column pt-4" style="height:100vh;">
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Бойцы" onclick="location.href='/admin-fighters.html'"><i class="bi bi-person-fill"></i><span class="ms-3">Бойцы</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Тренеры" onclick="location.href='/admin-coaches.html'"><i class="bi bi-people-fill"></i><span class="ms-3">Тренеры</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Виды спорта" onclick="location.href='/admin-sports.html'"><i class="bi bi-award-fill"></i><span class="ms-3">Виды спорта</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Новости" onclick="location.href='/admin-news.html'"><i class="bi bi-newspaper"></i><span class="ms-3">Новости</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Турниры" onclick="location.href='/admin-tournaments.html'"><i class="bi bi-trophy-fill"></i><span class="ms-3">Турниры</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Турнирные сетки" onclick="location.href='/admin-brackets.html'"><i class="bi bi-diagram-3-fill"></i><span class="ms-3">Турнирные сетки</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Сохранённые сетки" onclick="location.href='/admin-brackets-list.html'"><i class="bi bi-archive-fill"></i><span class="ms-3">Сохранённые сетки</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Клубы" onclick="alert('Скоро!')"><i class="bi bi-building"></i><span class="ms-3">Клубы</span></button></li>
+        <li class="nav-item mt-auto mb-2"><button class="btn logout-btn w-100" id="logout"><i class="bi bi-box-arrow-right"></i><span class="ms-3">Выйти</span></button></li>
+      </ul>
+    </nav>
+    <div class="admin-card">
+      <h2 class="mb-4">Управление видами спорта</h2>
+      <button class="btn add-btn w-100" id="add-sport">Добавить вид спорта</button>
+      <div id="sports-list"></div>
+      <a href="/admin.html" class="btn btn-secondary w-100 mt-4">Назад в админ-панель</a>
+    </div>
+  </div>
+
+  <!-- Модальное окно для добавления/редактирования вида спорта -->
+  <div class="modal fade" id="sportModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content bg-dark text-white">
+        <form id="sport-form">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalTitle">Добавить вид спорта</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="sport-id">
+            <div class="mb-3">
+              <label class="form-label">Название</label>
+              <input type="text" class="form-control" id="sport-name" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Описание</label>
+              <textarea class="form-control" id="sport-description" rows="2"></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Иконка/фото</label>
+              <input type="file" class="form-control" id="sport-image" accept="image/*">
+              <img id="image-preview" src="" alt="" style="max-width:100px;max-height:100px;display:none;margin-top:10px;">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Главное фото</label>
+              <input type="file" class="form-control" id="sport-main-photo" accept="image/*">
+              <img id="main-photo-preview" src="" alt="" style="max-width:100px;max-height:100px;display:none;margin-top:10px;">
+            </div>
+            <div class="row">
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label class="form-label">Основной цвет</label>
+                  <input type="color" class="form-control form-control-color" id="sport-primary-color" value="#e10600">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label class="form-label">Дополнительный цвет</label>
+                  <input type="color" class="form-control form-control-color" id="sport-secondary-color" value="#181818">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label class="form-label">Цвет текста</label>
+                  <input type="color" class="form-control form-control-color" id="sport-text-color" value="#ffffff">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+            <button type="submit" class="btn btn-danger">Сохранить</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    if (!localStorage.getItem('admin-auth')) {
+      window.location.href = '/login.html';
+    }
+    let sports = [];
+    let editingId = null;
+    const sportModal = new bootstrap.Modal(document.getElementById('sportModal'));
+    const form = document.getElementById('sport-form');
+    const imageInput = document.getElementById('sport-image');
+    const imagePreview = document.getElementById('image-preview');
+    const mainPhotoInput = document.getElementById('sport-main-photo');
+    const mainPhotoPreview = document.getElementById('main-photo-preview');
+
+    async function loadSports() {
+      const res = await fetch('/api/sports');
+      sports = await res.json();
+      renderSports();
+    }
+    function renderSports() {
+      const list = document.getElementById('sports-list');
+      list.innerHTML = '';
+      sports.forEach(s => {
+        const row = document.createElement('div');
+        row.className = 'sport-row';
+        row.innerHTML = `
+          <div class="sport-info">
+            ${s.image ? `<img src="${s.image}" class="sport-img" alt="">` : ''}
+            <div>
+              <div class="sport-name">${s.name}</div>
+              <div class="sport-meta">${s.description || ''}</div>
+              <div class="d-flex gap-2 mt-1">
+                <div style="width: 20px; height: 20px; background: ${s.primaryColor || '#e10600'}; border-radius: 3px; border: 1px solid #fff;"></div>
+                <div style="width: 20px; height: 20px; background: ${s.secondaryColor || '#181818'}; border-radius: 3px; border: 1px solid #fff;"></div>
+                <div style="width: 20px; height: 20px; background: ${s.textColor || '#ffffff'}; border-radius: 3px; border: 1px solid #fff;"></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <button class="admin-btn" onclick="editSport('${s.id}')">Редактировать</button>
+            <button class="admin-btn" onclick="deleteSport('${s.id}')">Удалить</button>
+          </div>
+        `;
+        list.appendChild(row);
+      });
+    }
+    window.editSport = function(id) {
+      const s = sports.find(x => x.id == id);
+      editingId = id;
+      document.getElementById('modalTitle').textContent = 'Редактировать вид спорта';
+      document.getElementById('sport-id').value = s.id;
+      document.getElementById('sport-name').value = s.name;
+      document.getElementById('sport-description').value = s.description || '';
+      
+      // Иконка
+      if (s.image) {
+        imagePreview.src = s.image;
+        imagePreview.style.display = '';
+      } else {
+        imagePreview.style.display = 'none';
+      }
+      imageInput.value = '';
+      
+      // Главное фото
+      if (s.mainPhoto) {
+        mainPhotoPreview.src = s.mainPhoto;
+        mainPhotoPreview.style.display = '';
+      } else {
+        mainPhotoPreview.style.display = 'none';
+      }
+      mainPhotoInput.value = '';
+      
+      // Цвета
+      document.getElementById('sport-primary-color').value = s.primaryColor || '#e10600';
+      document.getElementById('sport-secondary-color').value = s.secondaryColor || '#181818';
+      document.getElementById('sport-text-color').value = s.textColor || '#ffffff';
+      
+      sportModal.show();
+    }
+    window.deleteSport = async function(id) {
+      if (confirm('Удалить вид спорта?')) {
+        await fetch('/api/sports/' + id, { method: 'DELETE' });
+        loadSports();
+      }
+    }
+    document.getElementById('add-sport').onclick = function() {
+      editingId = null;
+      document.getElementById('modalTitle').textContent = 'Добавить вид спорта';
+      form.reset();
+      imagePreview.style.display = 'none';
+      mainPhotoPreview.style.display = 'none';
+      sportModal.show();
+    };
+    imageInput.onchange = function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          imagePreview.src = evt.target.result;
+          imagePreview.style.display = '';
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+    
+    mainPhotoInput.onchange = function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          mainPhotoPreview.src = evt.target.result;
+          mainPhotoPreview.style.display = '';
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+    form.onsubmit = async function(e) {
+      e.preventDefault();
+      const data = {
+        name: document.getElementById('sport-name').value,
+        description: document.getElementById('sport-description').value,
+        image: (imagePreview.src && imagePreview.style.display !== 'none') ? imagePreview.src : (editingId ? sports.find(x => x.id == editingId).image : ''),
+        mainPhoto: (mainPhotoPreview.src && mainPhotoPreview.style.display !== 'none') ? mainPhotoPreview.src : (editingId ? sports.find(x => x.id == editingId).mainPhoto : ''),
+        primaryColor: document.getElementById('sport-primary-color').value,
+        secondaryColor: document.getElementById('sport-secondary-color').value,
+        textColor: document.getElementById('sport-text-color').value,
+      };
+      if (editingId) {
+        await fetch('/api/sports/' + editingId, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+      } else {
+        await fetch('/api/sports', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+      }
+      sportModal.hide();
+      loadSports();
+    };
+    document.getElementById('logout').onclick = function() {
+      localStorage.removeItem('admin-auth');
+      window.location.href = '/login.html';
+    };
+    loadSports();
+  </script>
+</body>
+</html> 

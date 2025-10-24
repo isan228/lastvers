@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Новости — Sherdoc</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #111 60%, #e10600 100%);
+      color: #fff;
+      min-height: 100vh;
+    }
+    .navbar, .footer {
+      background: #181818cc;
+      box-shadow: 0 2px 8px #0008;
+    }
+    .navbar-brand {
+      font-weight: bold;
+      font-size: 2rem;
+      letter-spacing: 2px;
+    }
+    .red {
+      color: #e10600 !important;
+    }
+    .section-title {
+      border-left: 6px solid #e10600;
+      padding-left: 14px;
+      margin-bottom: 2rem;
+      font-weight: 700;
+      font-size: 2rem;
+      letter-spacing: 1px;
+    }
+    .news-card {
+      background: #222;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px #e1060033;
+      margin-bottom: 2rem;
+      overflow: hidden;
+      display: flex;
+      flex-direction: row;
+      gap: 0;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .news-card:hover {
+      box-shadow: 0 8px 32px #e1060066;
+      transform: translateY(-4px) scale(1.01);
+    }
+    .news-img {
+      width: 220px;
+      height: 180px;
+      object-fit: cover;
+      background: #fff;
+      flex-shrink: 0;
+    }
+    .news-body {
+      padding: 1.5rem 1.5rem 1.5rem 1.5rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .news-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #e10600;
+      margin-bottom: 0.5rem;
+    }
+    .news-date {
+      color: #e0e0e0;
+      font-size: 0.95rem;
+      margin-bottom: 0.7rem;
+    }
+    .news-content {
+      color: #fff;
+      font-size: 1.08rem;
+      margin-bottom: 0.5rem;
+      word-break: break-word;
+    }
+    @media (max-width: 768px) {
+      .news-card {
+        flex-direction: column;
+      }
+      .news-img {
+        width: 100%;
+        height: 180px;
+      }
+      .news-body {
+        padding: 1rem;
+      }
+    }
+    .footer {
+      color: #fff;
+      padding: 2rem 0 1rem 0;
+      text-align: center;
+      margin-top: 3rem;
+      border-top: 2px solid #e10600;
+    }
+    .social-icons a {
+      color: #e10600;
+      margin: 0 18px;
+      font-size: 2rem;
+      transition: color 0.2s;
+    }
+    .social-icons a:hover {
+      color: #fff;
+      text-shadow: 0 0 8px #e10600;
+    }
+    .back-button {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 1000;
+      border-radius: 50px;
+      padding: 12px 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+    }
+    .back-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="section-title">Новости</h1>
+    <div id="news-list"></div>
+  </div>
+
+  <!-- Кнопка "Назад" - фиксированная в левом нижнем углу -->
+  <button onclick="history.back()" class="btn btn-outline-danger btn-lg back-button">
+    <i class="bi bi-arrow-left"></i> Назад
+  </button>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="social-icons mb-3">
+        <a href="https://wa.me/996555123456" target="_blank" title="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+        <a href="https://t.me/yourtelegram" target="_blank" title="Telegram"><i class="bi bi-telegram"></i></a>
+      </div>
+      <div class="mb-2">Связаться с нами: <a href="mailto:info@sherdoc.kg" class="red">info@sherdoc.kg</a></div>
+      <div>© 2024 Sherdoc. Все права защищены.</div>
+    </div>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    async function loadNews() {
+      const res = await fetch('/api/news');
+      const news = await res.json();
+      const list = document.getElementById('news-list');
+      list.innerHTML = '';
+      if (!news.length) {
+        list.innerHTML = '<div class="text-center text-secondary">Пока нет новостей</div>';
+        return;
+      }
+      news.forEach(n => {
+        const card = document.createElement('div');
+        card.className = 'news-card';
+        card.innerHTML = `
+          ${n.image ? `<img src="${n.image}" class="news-img" alt="">` : ''}
+          <div class="news-body">
+            <div class="news-title">${n.title}</div>
+            <div class="news-date"><i class="bi bi-calendar-event"></i> ${new Date(n.date).toLocaleDateString()}</div>
+            <div class="news-content">${n.content.replace(/\n/g, '<br>')}</div>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    }
+    loadNews();
+  </script>
+</body>
+</html> 

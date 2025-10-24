@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тренеры — Sherdoc</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #111 60%, #e10600 100%);
+      color: #fff;
+      min-height: 100vh;
+    }
+    .navbar, .footer {
+      background: #181818cc;
+      box-shadow: 0 2px 8px #0008;
+    }
+    .navbar-brand {
+      font-weight: bold;
+      font-size: 2rem;
+      letter-spacing: 2px;
+    }
+    .red { color: #e10600 !important; }
+    .section-title {
+      border-left: 6px solid #e10600;
+      padding-left: 14px;
+      margin-bottom: 2rem;
+      font-weight: 700;
+      font-size: 2rem;
+      letter-spacing: 1px;
+    }
+    .filters-card {
+      background: #222;
+      padding: 1.5rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px #e1060033;
+      margin-bottom: 2rem;
+    }
+    .filters-card .form-label {
+      color: #fff;
+      font-weight: 500;
+    }
+    .filters-card .form-control, .filters-card .form-select {
+      background: #181818;
+      color: #fff;
+      border: 1px solid #e1060033;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      min-height: 48px;
+    }
+    .filters-card .form-control:focus, .filters-card .form-select:focus {
+      border-color: #e10600;
+      box-shadow: 0 0 0 2px #e1060033;
+    }
+    .filters-card .btn-danger {
+      background: #e10600;
+      border: none;
+      font-weight: 600;
+      border-radius: 10px;
+    }
+    .filters-card .btn-danger:hover {
+      background: #b00500;
+    }
+    .filters-card .btn-secondary {
+      border-radius: 10px;
+      font-weight: 600;
+    }
+    .coach-card {
+      background: #181818cc;
+      border-radius: 18px;
+      box-shadow: 0 4px 24px #e1060033;
+      padding: 1.5rem 1rem 1rem 1rem;
+      margin-bottom: 2rem;
+      text-align: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .coach-card:hover {
+      transform: translateY(-6px) scale(1.03);
+      box-shadow: 0 8px 32px #e1060066;
+    }
+    .coach-img {
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 3px solid #e10600;
+      margin-bottom: 1rem;
+    }
+    .coach-name {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.3rem;
+    }
+    .coach-meta {
+      color: #e0e0e0;
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    .back-link {
+      color: #e10600;
+      text-decoration: none;
+      font-size: 1.1rem;
+      margin-left: 1rem;
+    }
+    .back-link:hover {
+      color: #e10600;
+      text-decoration: none;
+    }
+    .fighter-card {
+      background: #181818cc;
+      border-radius: 14px;
+      box-shadow: 0 4px 24px #e1060033;
+      padding: 1.2rem 1.2rem 1rem 1.2rem;
+      margin-bottom: 1.5rem;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 220px;
+    }
+    .fighter-img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 2px solid #e10600;
+      background: #fff;
+      margin-bottom: 0.7rem;
+    }
+    .fighter-name {
+      font-weight: 700;
+      color: #e10600;
+      font-size: 1.1rem;
+      margin-bottom: 0.2rem;
+      text-align: center;
+    }
+    .fighter-meta {
+      color: #e0e0e0;
+      font-size: 0.97rem;
+      margin-bottom: 0.2rem;
+      text-align: center;
+    }
+    .students-list {
+      margin-top: 1.2rem;
+    }
+    .students-list-title {
+      color: #fff;
+      font-weight: 600;
+      margin-bottom: 0.7rem;
+      font-size: 1.1rem;
+    }
+    .back-button {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 1000;
+      border-radius: 50px;
+      padding: 12px 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+    }
+    .back-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1 class="section-title" id="page-title">Тренеры</h1>
+    <div class="filters-card">
+      <form class="row g-3 align-items-end" id="filter-form">
+        <div class="col-md-3">
+          <label class="form-label">Поиск по имени</label>
+          <input type="text" class="form-control" id="filter-name" placeholder="Введите имя тренера">
+        </div>
+        <div class="col-md-6 d-flex gap-2">
+          <button type="button" class="btn btn-secondary w-100" id="reset-filters">Сбросить фильтры</button>
+        </div>
+      </form>
+    </div>
+    <div class="row" id="coaches-list">
+      <!-- Карточки тренеров будут тут -->
+    </div>
+    <div id="not-found" class="text-center mt-5" style="display:none;">
+      <h4>Тренеры не найдены</h4>
+    </div>
+  </div>
+
+  <!-- Кнопка "Назад" - фиксированная в левом нижнем углу -->
+  <button onclick="history.back()" class="btn btn-outline-danger btn-lg back-button">
+    <i class="bi bi-arrow-left"></i> Назад
+  </button>
+
+  <script>
+    let allCoaches = [];
+    async function loadCoaches(sport = '') {
+      const res = await fetch(`/api/coaches${sport ? `?sport=${encodeURIComponent(sport)}` : ''}`);
+      allCoaches = await res.json();
+      filterAndRenderCoaches();
+    }
+    function filterAndRenderCoaches() {
+      const name = document.getElementById('filter-name').value.trim().toLowerCase();
+      let filtered = allCoaches;
+      if (name) {
+        filtered = filtered.filter(c => c.name.toLowerCase().includes(name));
+      }
+      const list = document.getElementById('coaches-list');
+      list.innerHTML = '';
+      document.getElementById('not-found').style.display = filtered.length ? 'none' : '';
+      renderCoaches(filtered);
+    }
+    async function renderCoaches(coaches) {
+      const list = document.getElementById('coaches-list');
+      for (const c of coaches) {
+        const col = document.createElement('div');
+        col.className = 'col-md-4';
+        col.innerHTML = `
+          <div class="coach-card h-100 d-flex flex-column align-items-center" style="cursor:pointer;" onclick="window.location='/coach.html?name=${encodeURIComponent(c.name)}'">
+            <img src="${c.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="coach-img mb-2" alt="Фото тренера">
+            <div class="coach-name">${c.name}</div>
+            <div class="coach-meta">Вид спорта: <b>${c.sport}</b></div>
+            <div class="coach-meta">Клуб: <b>${c.club || '-'}</b></div>
+            <div class="coach-meta">Пол: <b>${c.gender}</b> | Опыт: <b>${c.experience} лет</b></div>
+          </div>
+        `;
+        list.appendChild(col);
+      }
+    }
+    // Динамическая загрузка видов спорта в фильтр
+    // Получаем выбранный вид спорта из URL параметров
+    function getQueryParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name) || '';
+    }
+    
+    // Функция для загрузки и применения стилей спорта
+    async function loadSportStyles(sportName) {
+      try {
+        const res = await fetch(`/api/sports`);
+        const sports = await res.json();
+        const sport = sports.find(s => s.name === sportName);
+        
+        if (sport && (sport.primaryColor || sport.secondaryColor || sport.textColor)) {
+          // Применяем стили к странице
+          const root = document.documentElement;
+          
+          // Основной цвет
+          if (sport.primaryColor) {
+            root.style.setProperty('--sport-primary', sport.primaryColor);
+            
+            // Обновляем все элементы с классом .red
+            document.querySelectorAll('.red').forEach(el => {
+              el.style.color = sport.primaryColor + ' !important';
+            });
+            
+            // Обновляем границы секций
+            document.querySelectorAll('.section-title').forEach(el => {
+              el.style.borderLeftColor = sport.primaryColor;
+            });
+            
+            // Обновляем кнопки
+            document.querySelectorAll('.btn-danger, .btn-outline-danger').forEach(el => {
+              el.style.backgroundColor = sport.primaryColor;
+              el.style.borderColor = sport.primaryColor;
+            });
+            
+            // Обновляем иконки
+            document.querySelectorAll('.bi').forEach(el => {
+              if (el.style.color === 'rgb(225, 6, 0)' || el.style.color === '#e10600') {
+                el.style.color = sport.primaryColor;
+              }
+            });
+          }
+          
+          // Дополнительный цвет
+          if (sport.secondaryColor) {
+            root.style.setProperty('--sport-secondary', sport.secondaryColor);
+            
+            // Обновляем карточки
+            document.querySelectorAll('.card').forEach(el => {
+              el.style.backgroundColor = sport.secondaryColor;
+            });
+          }
+          
+          // Цвет текста
+          if (sport.textColor) {
+            root.style.setProperty('--sport-text', sport.textColor);
+            document.body.style.color = sport.textColor;
+            
+            // Обновляем все текстовые элементы
+            document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, span, div').forEach(el => {
+              if (!el.classList.contains('red') && !el.style.color.includes('rgb')) {
+                el.style.color = sport.textColor;
+              }
+            });
+          }
+          
+          // Обновляем градиент фона
+          if (sport.primaryColor) {
+            document.body.style.background = `linear-gradient(135deg, ${sport.secondaryColor || '#111'} 60%, ${sport.primaryColor} 100%)`;
+          }
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки стилей спорта:', error);
+      }
+    }
+    
+    const initialSport = getQueryParam('sport');
+    
+    if (initialSport) {
+      // Загружаем стили спорта
+      loadSportStyles(initialSport);
+      
+      document.getElementById('page-title').textContent = `Тренеры - ${initialSport}`;
+      loadCoaches(initialSport);
+    } else {
+      loadCoaches('');
+    }
+    document.getElementById('filter-name').addEventListener('input', filterAndRenderCoaches);
+    document.getElementById('reset-filters').onclick = function() {
+      document.getElementById('filter-name').value = '';
+      document.getElementById('page-title').textContent = 'Тренеры';
+      loadCoaches('');
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

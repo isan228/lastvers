@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админ: Новости — Sherdoc</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #111 60%, #e10600 100%);
+      color: #fff;
+      min-height: 100vh;
+    }
+    .admin-card {
+      background: #181818cc;
+      border-radius: 18px;
+      box-shadow: 0 4px 24px #e1060033;
+      padding: 2.5rem 2rem 2rem 2rem;
+      width: 100%;
+      max-width: 900px;
+      margin: 3rem auto;
+    }
+    .news-row {
+      background: #222;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .news-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .news-img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 2px solid #e10600;
+      background: #fff;
+    }
+    .news-title {
+      font-weight: 700;
+      color: #e10600;
+      font-size: 1.1rem;
+    }
+    .news-meta {
+      color: #e0e0e0;
+      font-size: 0.95rem;
+      margin-bottom: 0.5rem;
+    }
+    .news-content {
+      color: #fff;
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+      word-break: break-word;
+    }
+    .admin-btn {
+      border-radius: 10px;
+      font-weight: 600;
+      margin-left: 0.5rem;
+      background: #e10600;
+      border: none;
+      color: #fff;
+      transition: background 0.2s;
+      padding: 0.4rem 1.1rem;
+    }
+    .admin-btn:hover {
+      background: #b00500;
+      color: #fff;
+    }
+    .add-btn {
+      margin-bottom: 1.5rem;
+      background: #222;
+      color: #e10600;
+      border: none;
+    }
+    .add-btn:hover {
+      background: #e10600;
+      color: #fff;
+    }
+    #sidebar {
+      width: 64px;
+      background: #181818cc;
+      transition: width 0.3s;
+      overflow: visible;
+      z-index: 10;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      box-shadow: 2px 0 16px #0002;
+    }
+    #sidebar .btn {
+      text-align: left;
+      padding-left: 1.2rem;
+      font-size: 1.08rem;
+      background: none;
+      border: none;
+      color: #fff;
+      width: 100%;
+      transition: background 0.2s, color 0.2s;
+      position: relative;
+    }
+    #sidebar .btn i {
+      font-size: 1.3rem;
+      vertical-align: middle;
+      transition: color 0.2s;
+    }
+    #sidebar .btn span {
+      display: none;
+      margin-left: 1.1rem;
+      white-space: nowrap;
+      transition: opacity 0.2s, margin 0.2s;
+      opacity: 0;
+    }
+    #sidebar:hover, #sidebar:focus-within {
+      width: 300px;
+      box-shadow: 0 8px 32px #e1060066;
+    }
+    #sidebar:hover .btn span, #sidebar:focus-within .btn span {
+      display: inline;
+      opacity: 1;
+      margin-left: 1.1rem;
+    }
+    #sidebar .btn:hover, #sidebar .btn:focus, #sidebar .btn.active {
+      background: #e10600;
+      color: #fff;
+    }
+    @media (max-width: 991px) {
+      #sidebar { width: 100vw; position: static; }
+      #sidebar .btn span { display: inline !important; opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="d-flex" style="min-height:100vh;">
+    <nav id="sidebar" class="bg-dark" style="position:relative; z-index:10;">
+      <ul class="nav flex-column pt-4" style="height:100vh;">
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Бойцы" onclick="location.href='/admin-fighters.html'"><i class="bi bi-person-fill"></i><span class="ms-3">Бойцы</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Тренеры" onclick="location.href='/admin-coaches.html'"><i class="bi bi-people-fill"></i><span class="ms-3">Тренеры</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Виды спорта" onclick="location.href='/admin-sports.html'"><i class="bi bi-award-fill"></i><span class="ms-3">Виды спорта</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Новости" onclick="location.href='/admin-news.html'"><i class="bi bi-newspaper"></i><span class="ms-3">Новости</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Турниры" onclick="location.href='/admin-tournaments.html'"><i class="bi bi-trophy-fill"></i><span class="ms-3">Турниры</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Турнирные сетки" onclick="location.href='/admin-brackets.html'"><i class="bi bi-diagram-3-fill"></i><span class="ms-3">Турнирные сетки</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Сохранённые сетки" onclick="location.href='/admin-brackets-list.html'"><i class="bi bi-archive-fill"></i><span class="ms-3">Сохранённые сетки</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Клубы" onclick="alert('Скоро!')"><i class="bi bi-building"></i><span class="ms-3">Клубы</span></button></li>
+        <li class="nav-item mt-auto mb-2"><button class="btn logout-btn w-100" id="logout"><i class="bi bi-box-arrow-right"></i><span class="ms-3">Выйти</span></button></li>
+      </ul>
+    </nav>
+    <div class="admin-card">
+      <h2 class="mb-4">Управление новостями</h2>
+      <button class="btn add-btn w-100" id="add-news">Добавить новость</button>
+      <div id="news-list"></div>
+      <a href="/admin.html" class="btn btn-secondary w-100 mt-4">Назад в админ-панель</a>
+    </div>
+  </div>
+
+  <!-- Модальное окно для добавления/редактирования новости -->
+  <div class="modal fade" id="newsModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content bg-dark text-white">
+        <form id="news-form">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalTitle">Добавить новость</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="news-id">
+            <div class="mb-3">
+              <label class="form-label">Заголовок</label>
+              <input type="text" class="form-control" id="news-title" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Текст новости</label>
+              <textarea class="form-control" id="news-content" rows="4" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Фото</label>
+              <input type="file" class="form-control" id="news-image" accept="image/*">
+              <img id="image-preview" src="" alt="" style="max-width:100px;max-height:100px;display:none;margin-top:10px;">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Дата</label>
+              <input type="date" class="form-control" id="news-date">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+            <button type="submit" class="btn btn-danger">Сохранить</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    if (!localStorage.getItem('admin-auth')) {
+      window.location.href = '/login.html';
+    }
+    let news = [];
+    let editingId = null;
+    const newsModal = new bootstrap.Modal(document.getElementById('newsModal'));
+    const form = document.getElementById('news-form');
+    const imageInput = document.getElementById('news-image');
+    const imagePreview = document.getElementById('image-preview');
+
+    async function loadNews() {
+      const res = await fetch('/api/news');
+      news = await res.json();
+      renderNews();
+    }
+    function renderNews() {
+      const list = document.getElementById('news-list');
+      list.innerHTML = '';
+      if (!news.length) {
+        list.innerHTML = '<div class="text-center text-secondary">Нет новостей</div>';
+        return;
+      }
+      news.forEach(n => {
+        const row = document.createElement('div');
+        row.className = 'news-row';
+        row.innerHTML = `
+          <div class="news-info">
+            ${n.image ? `<img src="${n.image}" class="news-img" alt="">` : ''}
+            <div>
+              <div class="news-title">${n.title}</div>
+              <div class="news-meta">${new Date(n.date).toLocaleDateString()}</div>
+              <div class="news-content">${n.content.length > 120 ? n.content.slice(0, 120) + '…' : n.content}</div>
+            </div>
+          </div>
+          <div>
+            <button class="admin-btn" onclick="editNews('${n.id}')">Редактировать</button>
+            <button class="admin-btn" onclick="deleteNews('${n.id}')">Удалить</button>
+          </div>
+        `;
+        list.appendChild(row);
+      });
+    }
+    window.editNews = function(id) {
+      const n = news.find(x => x.id == id);
+      editingId = id;
+      document.getElementById('modalTitle').textContent = 'Редактировать новость';
+      document.getElementById('news-id').value = n.id;
+      document.getElementById('news-title').value = n.title;
+      document.getElementById('news-content').value = n.content;
+      if (n.image) {
+        imagePreview.src = n.image;
+        imagePreview.style.display = '';
+      } else {
+        imagePreview.style.display = 'none';
+      }
+      imageInput.value = '';
+      if (n.date) {
+        document.getElementById('news-date').value = n.date.slice(0, 10);
+      } else {
+        document.getElementById('news-date').value = '';
+      }
+      newsModal.show();
+    }
+    window.deleteNews = async function(id) {
+      if (confirm('Удалить новость?')) {
+        await fetch('/api/news/' + id, { method: 'DELETE' });
+        loadNews();
+      }
+    }
+    document.getElementById('add-news').onclick = function() {
+      editingId = null;
+      document.getElementById('modalTitle').textContent = 'Добавить новость';
+      form.reset();
+      imagePreview.style.display = 'none';
+      newsModal.show();
+    };
+    imageInput.onchange = function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          imagePreview.src = evt.target.result;
+          imagePreview.style.display = '';
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+    form.onsubmit = async function(e) {
+      e.preventDefault();
+      const data = {
+        title: document.getElementById('news-title').value,
+        content: document.getElementById('news-content').value,
+        image: (imagePreview.src && imagePreview.style.display !== 'none') ? imagePreview.src : (editingId ? news.find(x => x.id == editingId).image : ''),
+        date: document.getElementById('news-date').value ? new Date(document.getElementById('news-date').value) : new Date(),
+      };
+      if (editingId) {
+        await fetch('/api/news/' + editingId, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+      } else {
+        await fetch('/api/news', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+      }
+      newsModal.hide();
+      loadNews();
+    };
+    document.getElementById('logout').onclick = function() {
+      localStorage.removeItem('admin-auth');
+      window.location.href = '/login.html';
+    };
+    loadNews();
+  </script>
+</body>
+</html> 

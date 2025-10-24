@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админ: Бойцы — Sherdoc</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #111 60%, #e10600 100%);
+      color: #fff;
+      min-height: 100vh;
+    }
+    .admin-card {
+      background: #181818cc;
+      border-radius: 18px;
+      box-shadow: 0 4px 24px #e1060033;
+      padding: 2.5rem 2rem 2rem 2rem;
+      width: 100%;
+      max-width: 900px;
+      margin: 3rem auto;
+    }
+    .fighter-row {
+      background: #222;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .fighter-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .fighter-name {
+      font-weight: 700;
+      color: #e10600;
+      font-size: 1.1rem;
+    }
+    .fighter-meta {
+      color: #e0e0e0;
+      font-size: 0.95rem;
+    }
+    .admin-btn {
+      border-radius: 10px;
+      font-weight: 600;
+      margin-left: 0.5rem;
+      background: #e10600;
+      border: none;
+      color: #fff;
+      transition: background 0.2s;
+      padding: 0.4rem 1.1rem;
+    }
+    .admin-btn:hover {
+      background: #b00500;
+      color: #fff;
+    }
+    .add-btn {
+      margin-bottom: 1.5rem;
+      background: #222;
+      color: #e10600;
+      border: none;
+    }
+    .add-btn:hover {
+      background: #e10600;
+      color: #fff;
+    }
+    #sidebar {
+      width: 64px;
+      background: #181818cc;
+      transition: width 0.3s;
+      overflow: visible;
+      z-index: 10;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      box-shadow: 2px 0 16px #0002;
+    }
+    #sidebar .btn {
+      text-align: left;
+      padding-left: 1.2rem;
+      font-size: 1.08rem;
+      background: none;
+      border: none;
+      color: #fff;
+      width: 100%;
+      transition: background 0.2s, color 0.2s;
+      position: relative;
+    }
+    #sidebar .btn i {
+      font-size: 1.3rem;
+      vertical-align: middle;
+      transition: color 0.2s;
+    }
+    #sidebar .btn span {
+      display: none;
+      margin-left: 1.1rem;
+      white-space: nowrap;
+      transition: opacity 0.2s, margin 0.2s;
+      opacity: 0;
+    }
+    #sidebar:hover, #sidebar:focus-within {
+      width: 300px;
+      box-shadow: 0 8px 32px #e1060066;
+    }
+    #sidebar:hover .btn span, #sidebar:focus-within .btn span {
+      display: inline;
+      opacity: 1;
+      margin-left: 1.1rem;
+    }
+    #sidebar .btn:hover, #sidebar .btn:focus, #sidebar .btn.active {
+      background: #e10600;
+      color: #fff;
+    }
+    @media (max-width: 991px) {
+      #sidebar { width: 100vw; position: static; }
+      #sidebar .btn span { display: inline !important; opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="d-flex" style="min-height:100vh;">
+    <nav id="sidebar" class="bg-dark" style="position:relative; z-index:10;">
+      <ul class="nav flex-column pt-4" style="height:100vh;">
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Бойцы" onclick="location.href='/admin-fighters.html'"><i class="bi bi-person-fill"></i><span class="ms-3">Бойцы</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Тренеры" onclick="location.href='/admin-coaches.html'"><i class="bi bi-people-fill"></i><span class="ms-3">Тренеры</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Виды спорта" onclick="location.href='/admin-sports.html'"><i class="bi bi-award-fill"></i><span class="ms-3">Виды спорта</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Новости" onclick="location.href='/admin-news.html'"><i class="bi bi-newspaper"></i><span class="ms-3">Новости</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Турниры" onclick="location.href='/admin-tournaments.html'"><i class="bi bi-trophy-fill"></i><span class="ms-3">Турниры</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Турнирные сетки" onclick="location.href='/admin-brackets.html'"><i class="bi bi-diagram-3-fill"></i><span class="ms-3">Турнирные сетки</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Сохранённые сетки" onclick="location.href='/admin-brackets-list.html'"><i class="bi bi-archive-fill"></i><span class="ms-3">Сохранённые сетки</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Клубы" onclick="alert('Скоро!')"><i class="bi bi-building"></i><span class="ms-3">Клубы</span></button></li>
+        <li class="nav-item mt-auto mb-2"><button class="btn logout-btn w-100" id="logout"><i class="bi bi-box-arrow-right"></i><span class="ms-3">Выйти</span></button></li>
+      </ul>
+    </nav>
+    <div class="admin-card">
+      <h2 class="mb-4">Управление бойцами</h2>
+      <button class="btn add-btn w-100" id="add-fighter">Добавить бойца</button>
+      <input type="text" class="form-control mb-3" id="search-fighter" placeholder="Поиск по имени бойца...">
+      <div id="fighters-list"></div>
+      <a href="/admin.html" class="btn btn-secondary w-100 mt-4">Назад в админ-панель</a>
+    </div>
+  </div>
+
+  <!-- Модальное окно для добавления/редактирования бойца -->
+  <div class="modal fade" id="fighterModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content bg-dark text-white">
+        <form id="fighter-form">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalTitle">Добавить бойца</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="fighter-id">
+            <div class="mb-3">
+              <label class="form-label">Имя</label>
+              <input type="text" class="form-control" id="fighter-name" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Рост (см)</label>
+              <input type="number" class="form-control" id="fighter-height" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Вес (кг)</label>
+              <input type="number" class="form-control" id="fighter-weight" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Возраст</label>
+              <input type="number" class="form-control" id="fighter-age" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Победы</label>
+              <input type="number" class="form-control" id="fighter-wins" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Поражения</label>
+              <input type="number" class="form-control" id="fighter-losses" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Ничьи</label>
+              <input type="number" class="form-control" id="fighter-draws" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Вид спорта</label>
+              <select class="form-select" id="fighter-sport" required>
+                <!-- Виды спорта будут подгружаться динамически -->
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Пол</label>
+              <select class="form-select" id="fighter-gender" required>
+                <option value="мужской">Мужской</option>
+                <option value="женский">Женский</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Клуб</label>
+              <input type="text" class="form-control" id="fighter-club">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Тренер</label>
+              <input type="text" class="form-control" id="fighter-coach">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Фото</label>
+              <input type="file" class="form-control" id="fighter-photo" accept="image/*">
+              <img id="photo-preview" src="" alt="" style="max-width:100px;max-height:100px;display:none;margin-top:10px;">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+            <button type="submit" class="btn btn-danger">Сохранить</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    if (!localStorage.getItem('admin-auth')) {
+      window.location.href = '/login.html';
+    }
+    let fighters = [];
+    let editingId = null;
+    const fighterModal = new bootstrap.Modal(document.getElementById('fighterModal'));
+    const form = document.getElementById('fighter-form');
+    const photoInput = document.getElementById('fighter-photo');
+    const photoPreview = document.getElementById('photo-preview');
+
+    async function loadFighters() {
+      const res = await fetch('/api/fighters');
+      fighters = await res.json();
+      renderFighters();
+    }
+    function renderFighters() {
+      const list = document.getElementById('fighters-list');
+      const search = document.getElementById('search-fighter').value.trim().toLowerCase();
+      list.innerHTML = '';
+      fighters.filter(f => f.name.toLowerCase().includes(search)).forEach(f => {
+        const row = document.createElement('div');
+        row.className = 'fighter-row';
+        row.innerHTML = `
+          <div class="fighter-info">
+            <div class="fighter-name">${f.name}</div>
+            <div class="fighter-meta">Рост: <b>${f.height} см</b> | Вес: <b>${f.weight} кг</b> | Возраст: <b>${f.age}</b> | Победы: <b>${f.wins}</b> | Поражения: <b>${f.losses}</b> | Ничьи: <b>${f.draws}</b> | Вид спорта: <b>${f.sport}</b> | Пол: <b>${f.gender}</b> | Клуб: <b>${f.club || '-'}</b> | Тренер: <b>${f.coach || '-'}</b></div>
+          </div>
+          <div>
+            <button class="admin-btn" onclick="editFighter('${f.id}')">Редактировать</button>
+            <button class="admin-btn" onclick="deleteFighter('${f.id}')">Удалить</button>
+          </div>
+        `;
+        list.appendChild(row);
+      });
+    }
+    window.editFighter = function(id) {
+      const f = fighters.find(x => x.id == id);
+      editingId = id;
+      document.getElementById('modalTitle').textContent = 'Редактировать бойца';
+      document.getElementById('fighter-id').value = f.id;
+      document.getElementById('fighter-name').value = f.name;
+      document.getElementById('fighter-height').value = f.height;
+      document.getElementById('fighter-weight').value = f.weight;
+      document.getElementById('fighter-age').value = f.age;
+      document.getElementById('fighter-wins').value = f.wins;
+      document.getElementById('fighter-losses').value = f.losses;
+      document.getElementById('fighter-draws').value = f.draws;
+      document.getElementById('fighter-sport').value = f.sport;
+      document.getElementById('fighter-gender').value = f.gender;
+      document.getElementById('fighter-club').value = f.club || '';
+      document.getElementById('fighter-coach').value = f.coach || '';
+      if (f.photo) {
+        photoPreview.src = f.photo;
+        photoPreview.style.display = '';
+      } else {
+        photoPreview.style.display = 'none';
+      }
+      photoInput.value = '';
+      fighterModal.show();
+    }
+    window.deleteFighter = async function(id) {
+      if (confirm('Удалить бойца?')) {
+        await fetch('/api/fighters/' + id, { method: 'DELETE' });
+        loadFighters();
+      }
+    }
+    document.getElementById('add-fighter').onclick = function() {
+      editingId = null;
+      document.getElementById('modalTitle').textContent = 'Добавить бойца';
+      form.reset();
+      photoPreview.style.display = 'none';
+      fighterModal.show();
+    };
+    photoInput.onchange = function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          photoPreview.src = evt.target.result;
+          photoPreview.style.display = '';
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+    form.onsubmit = async function(e) {
+      e.preventDefault();
+      const data = {
+        name: document.getElementById('fighter-name').value,
+        height: +document.getElementById('fighter-height').value,
+        weight: +document.getElementById('fighter-weight').value,
+        age: +document.getElementById('fighter-age').value,
+        wins: +document.getElementById('fighter-wins').value,
+        losses: +document.getElementById('fighter-losses').value,
+        draws: +document.getElementById('fighter-draws').value,
+        sport: document.getElementById('fighter-sport').value,
+        gender: document.getElementById('fighter-gender').value,
+        club: document.getElementById('fighter-club').value,
+        coach: document.getElementById('fighter-coach').value,
+        photo: (photoPreview.src && photoPreview.style.display !== 'none') ? photoPreview.src : (editingId ? fighters.find(x => x.id == editingId).photo : ''),
+      };
+      if (editingId) {
+        await fetch('/api/fighters/' + editingId, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+      } else {
+        await fetch('/api/fighters', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+      }
+      fighterModal.hide();
+      loadFighters();
+    };
+    document.getElementById('search-fighter').oninput = renderFighters;
+    loadFighters();
+
+    // Динамическая загрузка видов спорта в форму бойца
+    async function loadFighterSportOptions() {
+      const res = await fetch('/api/sports');
+      const sports = await res.json();
+      const select = document.getElementById('fighter-sport');
+      select.innerHTML = sports.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+    }
+    loadFighterSportOptions();
+
+    document.getElementById('logout').onclick = function() {
+      localStorage.removeItem('admin-auth');
+      window.location.href = '/login.html';
+    };
+  </script>
+</body>
+</html> 

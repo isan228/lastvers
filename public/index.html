@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sherdoc — Спорт в Кыргызстане</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #111 60%, #e10600 100%);
+      color: #fff;
+      min-height: 100vh;
+    }
+    .navbar, .footer {
+      background: #181818cc;
+      box-shadow: 0 2px 8px #0008;
+    }
+    .navbar-brand {
+      font-weight: bold;
+      font-size: 2rem;
+      letter-spacing: 2px;
+    }
+    .red {
+      color: #e10600 !important;
+    }
+    .section-title {
+      border-left: 6px solid #e10600;
+      padding-left: 14px;
+      margin-bottom: 1.5rem;
+      font-weight: 700;
+      font-size: 2rem;
+      letter-spacing: 1px;
+    }
+    .card {
+      border: none;
+      border-radius: 18px;
+      box-shadow: 0 4px 24px #e1060033;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-6px) scale(1.03);
+      box-shadow: 0 8px 32px #e1060066;
+    }
+    .card-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+    }
+    .list-group-item {
+      background: #181818;
+      border: none;
+      border-bottom: 1px solid #e1060033;
+      font-size: 1.1rem;
+    }
+    .footer {
+      color: #fff;
+      padding: 2rem 0 1rem 0;
+      text-align: center;
+      margin-top: 3rem;
+      border-top: 2px solid #e10600;
+    }
+    .social-icons a {
+      color: #e10600;
+      margin: 0 18px;
+      font-size: 2rem;
+      transition: color 0.2s;
+    }
+    .social-icons a:hover {
+      color: #fff;
+      text-shadow: 0 0 8px #e10600;
+    }
+    .hero {
+      background: linear-gradient(90deg, #1a1a1a 70%, #e10600 100%);
+      border-radius: 18px;
+      box-shadow: 0 4px 32px #e1060033;
+      padding: 3rem 2rem 2rem 2rem;
+      margin-bottom: 3rem;
+      text-align: center;
+    }
+    .hero h1 {
+      font-size: 2.8rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: #fff;
+      margin-bottom: 1rem;
+    }
+    .hero p {
+      font-size: 1.3rem;
+      color: #e0e0e0;
+      margin-bottom: 1.5rem;
+    }
+    .hero .btn {
+      font-size: 1.1rem;
+      padding: 0.7rem 2.2rem;
+      border-radius: 30px;
+      background: #e10600;
+      border: none;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    .hero .btn:hover {
+      background: #b00500;
+    }
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2rem; }
+      .section-title { font-size: 1.3rem; }
+    }
+    .card-img-top.sport-img-main {
+      width: 100%;
+      height: 180px;
+      max-width: none;
+      max-height: none;
+      object-fit: cover;
+      border-radius: 0;
+      border: none;
+      box-shadow: 0 2px 16px #e1060033;
+      margin: 0 auto 0 auto;
+      display: block;
+      background: #fff;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card.bg-dark.sport-card-main {
+      background: linear-gradient(135deg, #181818 70%, #2a0000 100%);
+      border: 2px solid #e10600;
+      box-shadow: 0 4px 24px #e1060033;
+      transition: transform 0.2s, box-shadow 0.2s, border 0.2s;
+    }
+    .card.bg-dark.sport-card-main:hover {
+      transform: translateY(-8px) scale(1.04);
+      box-shadow: 0 8px 32px #e1060066;
+      border: 2px solid #fff;
+    }
+    #scrollTopBtn {
+      display: none;
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      z-index: 999;
+      background: #181818cc;
+      color: #e10600;
+      border: 2px solid #e10600;
+      border-radius: 50%;
+      width: 54px;
+      height: 54px;
+      box-shadow: 0 4px 16px #e1060033;
+      cursor: pointer;
+      transition: background 0.2s, border 0.2s, box-shadow 0.2s, transform 0.2s;
+      outline: none;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    #scrollTopBtn:hover {
+      background: #e10600;
+      color: #fff;
+      border: 2px solid #fff;
+      box-shadow: 0 8px 32px #e1060066;
+      transform: scale(1.08);
+    }
+    #scrollTopBtn svg {
+      display: block;
+      margin: 0 auto;
+    }
+    .main-news-content {
+      word-break: break-word;
+      white-space: normal;
+      padding-right: 1cm;
+      box-sizing: border-box;
+    }
+    .main-news-content.clamp {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: block;
+      max-height: 3.5em;
+    }
+    #autocomplete-list .list-group-item {
+      color: #fff;
+      background: #222;
+      border: 1px solid #e1060033;
+      font-size: 1.08rem;
+    }
+    #autocomplete-list .list-group-item:hover, #autocomplete-list .list-group-item.active {
+      background: #e10600;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <button id="scrollTopBtn" title="Наверх">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#e10600" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+  </button>
+  <!-- Шапка -->
+  <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+    <div class="container">
+      <a class="navbar-brand red" href="/sport-selection.html">Sherdoc KG</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="#presence">О нас</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" id="fighters-link">Бойцы</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" id="coaches-link">Тренеры</a></li>
+          <li class="nav-item"><a class="nav-link" href="/news.html">Новости</a></li>
+          <li class="nav-item"><a class="nav-link" href="/tournaments.html">Турниры</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin-login.html" style="color: #e10600; font-weight: 600;">Админ</a></li>
+        </ul>
+        <form class="d-flex ms-3 position-relative" id="search-form" action="/fighters.html" method="get" role="search" autocomplete="off">
+          <input class="form-control me-2" type="search" name="name" id="fighter-search" placeholder="Поиск бойца" aria-label="Поиск бойца" autocomplete="off">
+          <button class="btn btn-outline-danger" type="submit">Найти</button>
+          <div id="autocomplete-list" class="list-group position-absolute w-100" style="z-index: 1000; top:100%; left:0;"></div>
+        </form>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Hero section -->
+    <section class="hero mb-5">
+      <h1>Добро пожаловать в <span class="red">Sherdoc KG</span>!</h1>
+      <p>Платформа для просмотра всех спортивных новостей, турниров и отслеживания достижений всех выдающихся спортсменов Кыргызской Республики.<br>Смотри, болей, участвуй — всё в одном месте!</p>
+      <a href="#sports" class="btn">Узнать больше</a>
+    </section>
+
+    <!-- Последние 3 новости -->
+    <section id="main-news-list" class="mb-5" style="display:none;"></section>
+
+    <!-- Присутствие -->
+    <section id="presence" class="mb-5">
+      <h2 class="section-title red">О Sherdoc</h2>
+      <div class="card bg-dark text-white p-4 shadow-lg border-0">
+        <div class="row align-items-center">
+          <div class="col-md-2 text-center mb-3 mb-md-0">
+            <i class="bi bi-trophy-fill" style="font-size:3.2rem; color:#e10600;"></i>
+          </div>
+          <div class="col-md-10">
+            <p class="mb-3" style="font-size:1.45rem; line-height:1.5;">
+              <b>Sherdoc</b> — современная платформа для федераций боевых видов спорта Кыргызской Республики.
+            </p>
+            <ul class="mb-3" style="font-size:1.25rem;">
+              <li class="mb-1"><i class="bi bi-newspaper red"></i> Все спортивные новости и турниры страны</li>
+              <li class="mb-1"><i class="bi bi-person-badge red"></i> Профили выдающихся спортсменов и тренеров</li>
+              <li class="mb-1"><i class="bi bi-diagram-3 red"></i> Турнирные сетки, статистика и достижения</li>
+              <li class="mb-1"><i class="bi bi-people red"></i> Удобные инструменты для федераций, клубов и болельщиков</li>
+            </ul>
+            <div style="font-size:1.18rem; color:#e0e0e0;">
+              Сайт разработан для поддержки и развития боевых видов спорта в Кыргызстане.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+  </div>
+
+  <!-- Футер -->
+  <footer class="footer">
+    <div class="container">
+      <div class="social-icons mb-3">
+        <a href="https://wa.me/996555123456" target="_blank" title="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+        <a href="https://t.me/yourtelegram" target="_blank" title="Telegram"><i class="bi bi-telegram"></i></a>
+      </div>
+      <div class="mb-2">Связаться с нами: <a href="mailto:info@sherdoc.kg" class="red">info@sherdoc.kg</a></div>
+      <div>© 2024 Sherdoc. Все права защищены.</div>
+    </div>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const input = document.getElementById('fighter-search');
+    const list = document.getElementById('autocomplete-list');
+    let fighters = [];
+    fetch('/api/fighters').then(r => r.json()).then(data => { fighters = data; });
+    input.addEventListener('input', function() {
+      const val = this.value.trim().toLowerCase();
+      list.innerHTML = '';
+      if (!val) return;
+      const matches = fighters.filter(f => f.name.toLowerCase().includes(val)).slice(0, 5);
+      matches.forEach(f => {
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'list-group-item list-group-item-action';
+        item.textContent = f.name;
+        item.onclick = () => {
+          input.value = f.name;
+          list.innerHTML = '';
+          document.getElementById('search-form').dispatchEvent(new Event('submit', {cancelable:true}));
+        };
+        list.appendChild(item);
+      });
+    });
+    document.addEventListener('click', (e) => {
+      if (!input.contains(e.target) && !list.contains(e.target)) list.innerHTML = '';
+    });
+    document.getElementById('search-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const val = input.value.trim();
+      if (val) {
+        window.location.href = `/fighters.html?name=${encodeURIComponent(val)}`;
+      } else {
+        window.location.href = '/fighters.html';
+      }
+    });
+
+    // Получаем выбранный вид спорта из URL параметров
+    function getSelectedSport() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('sport');
+    }
+
+    // Функция для загрузки и применения стилей спорта
+    async function loadSportStyles(sportName) {
+      try {
+        const res = await fetch(`/api/sports`);
+      const sports = await res.json();
+        const sport = sports.find(s => s.name === sportName);
+        
+        if (sport && (sport.primaryColor || sport.secondaryColor || sport.textColor)) {
+          // Применяем стили к странице
+          const root = document.documentElement;
+          
+          // Основной цвет
+          if (sport.primaryColor) {
+            root.style.setProperty('--sport-primary', sport.primaryColor);
+            
+            // Обновляем все элементы с классом .red
+            document.querySelectorAll('.red').forEach(el => {
+              el.style.color = sport.primaryColor + ' !important';
+            });
+            
+            // Обновляем границы секций
+            document.querySelectorAll('.section-title').forEach(el => {
+              el.style.borderLeftColor = sport.primaryColor;
+            });
+            
+            // Обновляем кнопки
+            document.querySelectorAll('.btn-danger, .btn-outline-danger').forEach(el => {
+              el.style.backgroundColor = sport.primaryColor;
+              el.style.borderColor = sport.primaryColor;
+            });
+            
+            // Обновляем иконки
+            document.querySelectorAll('.bi').forEach(el => {
+              if (el.style.color === 'rgb(225, 6, 0)' || el.style.color === '#e10600') {
+                el.style.color = sport.primaryColor;
+              }
+            });
+          }
+          
+          // Дополнительный цвет
+          if (sport.secondaryColor) {
+            root.style.setProperty('--sport-secondary', sport.secondaryColor);
+            
+            // Обновляем карточки
+            document.querySelectorAll('.card').forEach(el => {
+              el.style.backgroundColor = sport.secondaryColor;
+            });
+            
+            // Обновляем навбар и футер
+            document.querySelectorAll('.navbar, .footer').forEach(el => {
+              el.style.backgroundColor = sport.secondaryColor + 'cc';
+            });
+          }
+          
+          // Цвет текста
+          if (sport.textColor) {
+            root.style.setProperty('--sport-text', sport.textColor);
+            document.body.style.color = sport.textColor;
+            
+            // Обновляем все текстовые элементы
+            document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, span, div').forEach(el => {
+              if (!el.classList.contains('red') && !el.style.color.includes('rgb')) {
+                el.style.color = sport.textColor;
+              }
+            });
+          }
+          
+          // Обновляем градиент фона
+          if (sport.primaryColor) {
+            document.body.style.background = `linear-gradient(135deg, ${sport.secondaryColor || '#111'} 60%, ${sport.primaryColor} 100%)`;
+          }
+          
+          // Обновляем hero секцию
+          const hero = document.querySelector('.hero');
+          if (hero && sport.primaryColor) {
+            hero.style.background = `linear-gradient(90deg, ${sport.secondaryColor || '#1a1a1a'} 70%, ${sport.primaryColor} 100%)`;
+          }
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки стилей спорта:', error);
+      }
+    }
+
+    // Проверяем, выбран ли вид спорта
+    const selectedSport = getSelectedSport();
+    if (selectedSport) {
+      // Загружаем стили спорта
+      loadSportStyles(selectedSport);
+      
+      // Обновляем заголовок страницы для выбранного вида спорта
+      document.querySelector('.hero h1').innerHTML = `Добро пожаловать в <span class="red">Sherdoc KG</span>!`;
+      document.querySelector('.hero p').innerHTML = `Информация по виду спорта: <strong>${selectedSport}</strong><br>Смотри, болей, участвуй — всё в одном месте!`;
+      
+      // Загружаем бойцов выбранного вида спорта
+      loadFightersForSport(selectedSport);
+    }
+
+    // Загружаем бойцов для выбранного вида спорта
+    async function loadFightersForSport(sportName) {
+      try {
+        const res = await fetch(`/api/fighters?sport=${encodeURIComponent(sportName)}`);
+        const fighters = await res.json();
+        
+        // Создаем секцию с бойцами
+        const fightersSection = document.createElement('section');
+        fightersSection.className = 'mb-5';
+        fightersSection.innerHTML = `
+          <h2 class="section-title red">Бойцы - ${sportName}</h2>
+          <div class="row" id="fighters-preview">
+            <!-- Бойцы будут загружены динамически -->
+          </div>
+          <div class="text-center mt-4">
+            <a href="/fighters.html?sport=${encodeURIComponent(sportName)}" class="btn btn-danger btn-lg">Бойцы ${sportName}</a>
+          </div>
+        `;
+        
+        // Вставляем секцию после секции "О нас"
+        const presenceSection = document.getElementById('presence');
+        presenceSection.parentNode.insertBefore(fightersSection, presenceSection.nextSibling);
+        
+        // Показываем первых 6 бойцов
+        const fightersList = document.getElementById('fighters-preview');
+        fighters.slice(0, 6).forEach(fighter => {
+        const col = document.createElement('div');
+          col.className = 'col-md-4 mb-3';
+        col.innerHTML = `
+            <div class="card bg-dark text-white h-100" onclick="window.location.href='/fighter.html?name=${encodeURIComponent(fighter.name)}'">
+              <div class="card-body text-center">
+                <img src="${fighter.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" 
+                     class="rounded-circle mb-3" width="80" height="80" style="object-fit: cover;">
+                <h6 class="card-title">${fighter.name}</h6>
+                <p class="card-text small">
+                  Рост: ${fighter.height} см | Вес: ${fighter.weight} кг<br>
+                  Победы: ${fighter.wins} | Поражения: ${fighter.losses}
+                </p>
+            </div>
+          </div>
+        `;
+          fightersList.appendChild(col);
+        });
+        
+      } catch (error) {
+        console.error('Ошибка загрузки бойцов:', error);
+      }
+    }
+
+    // Обработка клика по ссылке "Бойцы"
+    document.getElementById('fighters-link').addEventListener('click', function(e) {
+      e.preventDefault();
+      const selectedSport = getSelectedSport();
+      if (selectedSport) {
+        window.location.href = `/fighters.html?sport=${encodeURIComponent(selectedSport)}`;
+      } else {
+        window.location.href = '/fighters.html';
+      }
+    });
+
+    // Обработка клика по ссылке "Тренеры"
+    document.getElementById('coaches-link').addEventListener('click', function(e) {
+      e.preventDefault();
+      const selectedSport = getSelectedSport();
+      if (selectedSport) {
+        window.location.href = `/coaches.html?sport=${encodeURIComponent(selectedSport)}`;
+      } else {
+        window.location.href = '/coaches.html';
+      }
+    });
+
+    // Кнопка "Вверх"
+    const scrollTopBtn = document.getElementById('scrollTopBtn');
+    window.addEventListener('scroll', function() {
+      if (window.scrollY > 300) {
+        scrollTopBtn.style.display = 'flex';
+      } else {
+        scrollTopBtn.style.display = 'none';
+      }
+    });
+    scrollTopBtn.addEventListener('click', function() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+
+    // --- Последние 3 новости на главной с кнопкой 'Развернуть...' ---
+    async function loadMainNewsList() {
+      const res = await fetch('/api/news');
+      const news = await res.json();
+      if (!news.length) return;
+      news.sort((a, b) => new Date(b.date) - new Date(a.date));
+      const section = document.getElementById('main-news-list');
+      section.innerHTML = '';
+      news.slice(0, 3).forEach((n, idx) => {
+        const card = document.createElement('div');
+        card.className = 'card bg-dark text-white shadow-lg border-0 flex-md-row flex-column align-items-stretch overflow-hidden mb-4';
+        card.style.minHeight = '180px';
+        card.innerHTML = `
+          <div class="d-flex align-items-center justify-content-center" style="min-width:220px; background:#222;">
+            ${n.image ? `<img src="${n.image}" alt="" style="width:220px; height:180px; object-fit:cover; border-radius:0;">` : ''}
+          </div>
+          <div class="card-body d-flex flex-column justify-content-center">
+            <div class="news-title" style="font-size:1.35rem; font-weight:700; color:#e10600; margin-bottom:0.5rem;">${n.title}</div>
+            <div class="news-date" style="color:#e0e0e0; font-size:0.98rem; margin-bottom:0.7rem;"><i class="bi bi-calendar-event"></i> ${new Date(n.date).toLocaleDateString()}</div>
+            <div class="main-news-content clamp" id="main-news-content-${idx}" style="color:#fff; font-size:1.13rem;"></div>
+            <button id="expand-news-btn-${idx}" class="btn btn-link p-0 mt-2" style="color:#e10600; font-size:1.08rem; display:none;">Развернуть...</button>
+          </div>
+        `;
+        section.appendChild(card);
+        // Ограничение по символам (примерно 2 строки, ~170 символов)
+        const charLimit = 170;
+        const isLong = n.content.length > charLimit;
+        let shortText = n.content;
+        if (isLong) {
+          shortText = n.content.slice(0, charLimit) + '...';
+        }
+        const contentDiv = card.querySelector(`#main-news-content-${idx}`);
+        contentDiv.innerHTML = shortText.replace(/\n/g, '<br>');
+        if (isLong) {
+          const btn = card.querySelector(`#expand-news-btn-${idx}`);
+          btn.style.display = '';
+          btn.onclick = function() {
+            contentDiv.classList.remove('clamp');
+            contentDiv.innerHTML = n.content.replace(/\n/g, '<br>');
+            this.style.display = 'none';
+          };
+        }
+      });
+      section.style.display = '';
+    }
+    loadMainNewsList();
+  </script>
+</body>
+</html> 

@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Боец — Sherdoc KG</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #111 60%, #e10600 100%);
+      color: #fff;
+      min-height: 100vh;
+    }
+    .fighter-card {
+      background: #181818cc;
+      border-radius: 18px;
+      box-shadow: 0 4px 24px #e1060033;
+      padding: 2rem;
+      margin: 2rem auto;
+      max-width: 800px;
+    }
+    .fighter-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 2rem;
+      gap: 2rem;
+    }
+    .fighter-photo {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #e10600;
+    }
+    .fighter-info h1 {
+      color: #e10600;
+      margin-bottom: 0.5rem;
+    }
+    .fighter-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .stat-card {
+      background: #222;
+      padding: 1rem;
+      border-radius: 10px;
+      text-align: center;
+      border: 1px solid #444;
+    }
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #e10600;
+    }
+    .stat-label {
+      font-size: 0.9rem;
+      color: #ccc;
+    }
+    .history-section {
+      margin-top: 2rem;
+    }
+    .history-item {
+      background: #222;
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      border-left: 4px solid #e10600;
+      transition: all 0.3s;
+    }
+    .history-item:hover {
+      transform: translateX(5px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .history-item.win {
+      border-left-color: #28a745;
+      background: linear-gradient(135deg, #222 0%, #1a3d1a 100%);
+    }
+    .history-item.loss {
+      border-left-color: #dc3545;
+      background: linear-gradient(135deg, #222 0%, #3d1a1a 100%);
+    }
+    .history-item.draw {
+      border-left-color: #ffc107;
+      background: linear-gradient(135deg, #222 0%, #3d3a1a 100%);
+    }
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .history-opponent {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .opponent-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #fff;
+    }
+    .opponent-info h4 {
+      margin: 0;
+      color: #fff;
+    }
+    .opponent-details {
+      font-size: 0.9rem;
+      color: #ccc;
+    }
+    .history-result {
+      font-weight: bold;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .history-result.win {
+      background: linear-gradient(135deg, #28a745, #20c997);
+      color: white;
+    }
+    .history-result.loss {
+      background: linear-gradient(135deg, #dc3545, #e74c3c);
+      color: white;
+    }
+    .history-result.draw {
+      background: linear-gradient(135deg, #ffc107, #ffeb3b);
+      color: black;
+    }
+    .history-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .detail-item {
+      background: rgba(255,255,255,0.1);
+      padding: 0.75rem;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .detail-label {
+      font-size: 0.8rem;
+      color: #ccc;
+      margin-bottom: 0.25rem;
+    }
+    .detail-value {
+      font-weight: bold;
+      color: #fff;
+    }
+    .history-stats {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #444;
+    }
+    .stat-item {
+      text-align: center;
+      flex: 1;
+    }
+    .stat-number {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #e10600;
+    }
+    .stat-text {
+      font-size: 0.8rem;
+      color: #ccc;
+    }
+    .history-summary {
+      background: linear-gradient(135deg, #222 0%, #333 100%);
+      border-radius: 15px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      border: 2px solid #444;
+    }
+    .summary-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1.5rem;
+    }
+    .summary-item {
+      text-align: center;
+      padding: 1rem;
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .summary-number {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #e10600;
+      margin-bottom: 0.5rem;
+    }
+    .summary-label {
+      font-size: 0.9rem;
+      color: #ccc;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .back-btn {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: #e10600;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(225, 6, 0, 0.3);
+      transition: all 0.3s;
+    }
+    .back-btn:hover {
+      background: #b00500;
+      transform: scale(1.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="fighter-card">
+      <div class="fighter-header">
+        <img id="fighter-photo" src="" alt="Фото бойца" class="fighter-photo">
+        <div class="fighter-info">
+          <h1 id="fighter-name">Загрузка...</h1>
+          <p id="fighter-details">Загрузка информации...</p>
+        </div>
+      </div>
+      
+      <div class="fighter-stats">
+        <div class="stat-card">
+          <div class="stat-value" id="wins">0</div>
+          <div class="stat-label">Победы</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="losses">0</div>
+          <div class="stat-label">Поражения</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="draws">0</div>
+          <div class="stat-label">Ничьи</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="total-fights">0</div>
+          <div class="stat-label">Всего боев</div>
+        </div>
+      </div>
+      
+      <div class="history-section">
+        <h3>История боев</h3>
+        <div id="history-summary" class="history-summary" style="display: none;">
+          <div class="summary-stats">
+            <div class="summary-item">
+              <div class="summary-number" id="total-fights">0</div>
+              <div class="summary-label">Всего боев</div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-number" id="win-rate">0%</div>
+              <div class="summary-label">Процент побед</div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-number" id="last-fight">-</div>
+              <div class="summary-label">Последний бой</div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-number" id="current-streak">0</div>
+              <div class="summary-label">Текущая серия</div>
+            </div>
+          </div>
+        </div>
+        <div id="fight-history">
+          <p>Загрузка истории боев...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <button class="back-btn" onclick="history.back()">
+    <i class="bi bi-arrow-left"></i>
+  </button>
+
+  <script>
+    let fighter = null;
+    let fightHistory = [];
+
+    // Загрузка информации о бойце
+    async function loadFighter() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const fighterName = urlParams.get('name');
+      
+      if (!fighterName) {
+        document.getElementById('fighter-name').textContent = 'Боец не найден';
+        return;
+      }
+
+      try {
+        // Получаем всех бойцов и находим нужного
+        const response = await fetch('/api/fighters');
+        const fighters = await response.json();
+        fighter = fighters.find(f => f.name === fighterName);
+        
+        if (!fighter) {
+          document.getElementById('fighter-name').textContent = 'Боец не найден';
+          return;
+        }
+
+        // Заполняем информацию о бойце
+        document.getElementById('fighter-name').textContent = fighter.name;
+        document.getElementById('fighter-photo').src = fighter.photo || 'https://via.placeholder.com/150';
+        document.getElementById('fighter-details').innerHTML = `
+          <strong>Клуб:</strong> ${fighter.club || 'Не указан'}<br>
+          <strong>Тренер:</strong> ${fighter.coach || 'Не указан'}<br>
+          <strong>Вид спорта:</strong> ${fighter.sport}<br>
+          <strong>Вес:</strong> ${fighter.weight} кг<br>
+          <strong>Рост:</strong> ${fighter.height} см<br>
+          <strong>Возраст:</strong> ${fighter.age} лет
+        `;
+
+        // Заполняем статистику
+        document.getElementById('wins').textContent = fighter.wins || 0;
+        document.getElementById('losses').textContent = fighter.losses || 0;
+        document.getElementById('draws').textContent = fighter.draws || 0;
+        document.getElementById('total-fights').textContent = (fighter.wins || 0) + (fighter.losses || 0) + (fighter.draws || 0);
+
+        // Загружаем историю боев
+        await loadFightHistory();
+        
+      } catch (error) {
+        console.error('Ошибка загрузки бойца:', error);
+        document.getElementById('fighter-name').textContent = 'Ошибка загрузки';
+      }
+    }
+
+    // Обновление сводной статистики истории боев
+    function updateHistorySummary(history) {
+      if (history.length === 0) {
+        document.getElementById('history-summary').style.display = 'none';
+        return;
+      }
+      
+      document.getElementById('history-summary').style.display = 'block';
+      
+      // Общее количество боев
+      const totalFights = history.length;
+      document.getElementById('total-fights').textContent = totalFights;
+      
+      // Процент побед
+      const wins = history.filter(fight => fight.result === 'win').length;
+      const winRate = totalFights > 0 ? Math.round((wins / totalFights) * 100) : 0;
+      document.getElementById('win-rate').textContent = `${winRate}%`;
+      
+      // Последний бой
+      const lastFight = history[0]; // Самый свежий бой
+      const lastFightDate = new Date(lastFight.fightDate);
+      const daysAgo = Math.ceil((new Date() - lastFightDate) / (1000 * 60 * 60 * 24));
+      document.getElementById('last-fight').textContent = `${daysAgo} дн. назад`;
+      
+      // Текущая серия (последние результаты подряд)
+      let currentStreak = 0;
+      const lastResult = history[0].result;
+      for (let i = 0; i < history.length; i++) {
+        if (history[i].result === lastResult) {
+          currentStreak++;
+        } else {
+          break;
+        }
+      }
+      document.getElementById('current-streak').textContent = `${currentStreak} ${lastResult === 'win' ? 'побед' : lastResult === 'loss' ? 'поражений' : 'ничьих'}`;
+    }
+
+    // Загрузка истории боев
+    async function loadFightHistory() {
+      try {
+        const response = await fetch(`/api/fighters/${fighter.id}/history`);
+        fightHistory = await response.json();
+        
+        const historyContainer = document.getElementById('fight-history');
+        
+        if (fightHistory.length === 0) {
+          historyContainer.innerHTML = '<p>История боев пуста</p>';
+          return;
+        }
+
+        // Показываем сводную статистику
+        updateHistorySummary(fightHistory);
+        
+        historyContainer.innerHTML = fightHistory.map((fight, index) => {
+          const fightDate = new Date(fight.fightDate);
+          const resultText = fight.result === 'win' ? 'ПОБЕДА' : fight.result === 'loss' ? 'ПОРАЖЕНИЕ' : 'НИЧЬЯ';
+          const resultIcon = fight.result === 'win' ? '🥊' : fight.result === 'loss' ? '💔' : '🤝';
+          
+          return `
+            <div class="history-item ${fight.result}">
+              <div class="history-header">
+                <div class="history-opponent">
+                  <div class="opponent-avatar">
+                    ${fight.opponentName.charAt(0).toUpperCase()}
+                  </div>
+                  <div class="opponent-info">
+                    <h4>${fight.opponentName}</h4>
+                    <div class="opponent-details">
+                      ${fight.opponentClub ? `Клуб: ${fight.opponentClub}` : 'Клуб не указан'}
+                    </div>
+                  </div>
+                </div>
+                <span class="history-result ${fight.result}">
+                  ${resultIcon} ${resultText}
+                </span>
+              </div>
+              
+              <div class="history-details">
+                <div class="detail-item">
+                  <div class="detail-label">Турнир</div>
+                  <div class="detail-value">${fight.tournamentName}</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Раунд</div>
+                  <div class="detail-value">${fight.round}</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Дата</div>
+                  <div class="detail-value">${fightDate.toLocaleDateString('ru-RU', { 
+                    day: '2-digit', 
+                    month: '2-digit', 
+                    year: 'numeric' 
+                  })}</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Время</div>
+                  <div class="detail-value">${fightDate.toLocaleTimeString('ru-RU', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  })}</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Весовая категория</div>
+                  <div class="detail-value">${fight.weight} кг</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Вид спорта</div>
+                  <div class="detail-value">${fight.sport}</div>
+                </div>
+              </div>
+              
+              <div class="history-stats">
+                <div class="stat-item">
+                  <div class="stat-number">#${fightHistory.length - index}</div>
+                  <div class="stat-text">Бой в карьере</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-number">${Math.ceil((new Date() - fightDate) / (1000 * 60 * 60 * 24))}</div>
+                  <div class="stat-text">Дней назад</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-number">${fight.result === 'win' ? '100%' : fight.result === 'loss' ? '0%' : '50%'}</div>
+                  <div class="stat-text">Результат</div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+        
+      } catch (error) {
+        console.error('Ошибка загрузки истории боев:', error);
+        document.getElementById('fight-history').innerHTML = '<p>Ошибка загрузки истории боев</p>';
+      }
+    }
+
+    // Загрузка стилей спорта
+    async function loadSportStyles(sportName) {
+      try {
+        const res = await fetch(`/api/sports`);
+        const sports = await res.json();
+        const sport = sports.find(s => s.name === sportName);
+        
+        if (sport && (sport.primaryColor || sport.secondaryColor || sport.textColor)) {
+          const root = document.documentElement;
+          
+          if (sport.primaryColor) {
+            root.style.setProperty('--sport-primary', sport.primaryColor);
+            document.querySelectorAll('.red, .stat-value').forEach(el => {
+              el.style.color = sport.primaryColor;
+            });
+            document.querySelectorAll('.history-item').forEach(el => {
+              el.style.borderLeftColor = sport.primaryColor;
+            });
+          }
+          
+          if (sport.secondaryColor) {
+            root.style.setProperty('--sport-secondary', sport.secondaryColor);
+            document.querySelectorAll('.fighter-card, .stat-card, .history-item').forEach(el => {
+              el.style.backgroundColor = sport.secondaryColor;
+            });
+          }
+          
+          if (sport.textColor) {
+            root.style.setProperty('--sport-text', sport.textColor);
+            document.body.style.color = sport.textColor;
+          }
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки стилей спорта:', error);
+      }
+    }
+
+    // Инициализация
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadFighter();
+      if (fighter) {
+        await loadSportStyles(fighter.sport);
+      }
+    });
+  </script>
+</body>
+</html>

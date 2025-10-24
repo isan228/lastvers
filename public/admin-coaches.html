@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админ: Тренеры — Sherdoc</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #111 60%, #e10600 100%);
+      color: #fff;
+      min-height: 100vh;
+    }
+    .admin-card {
+      background: #181818cc;
+      border-radius: 18px;
+      box-shadow: 0 4px 24px #e1060033;
+      padding: 2.5rem 2rem 2rem 2rem;
+      width: 100%;
+      max-width: 900px;
+      margin: 3rem auto;
+    }
+    .coach-row {
+      background: #222;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .coach-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .coach-name {
+      font-weight: 700;
+      color: #e10600;
+      font-size: 1.1rem;
+    }
+    .coach-meta {
+      color: #e0e0e0;
+      font-size: 0.95rem;
+    }
+    .admin-btn {
+      border-radius: 10px;
+      font-weight: 600;
+      margin-left: 0.5rem;
+      background: #e10600;
+      border: none;
+      color: #fff;
+      transition: background 0.2s;
+      padding: 0.4rem 1.1rem;
+    }
+    .admin-btn:hover {
+      background: #b00500;
+      color: #fff;
+    }
+    .add-btn {
+      margin-bottom: 1.5rem;
+      background: #222;
+      color: #e10600;
+      border: none;
+    }
+    .add-btn:hover {
+      background: #e10600;
+      color: #fff;
+    }
+    #sidebar {
+      width: 64px;
+      background: #181818cc;
+      transition: width 0.3s;
+      overflow: visible;
+      z-index: 10;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      box-shadow: 2px 0 16px #0002;
+    }
+    #sidebar .btn {
+      text-align: left;
+      padding-left: 1.2rem;
+      font-size: 1.08rem;
+      background: none;
+      border: none;
+      color: #fff;
+      width: 100%;
+      transition: background 0.2s, color 0.2s;
+      position: relative;
+    }
+    #sidebar .btn i {
+      font-size: 1.3rem;
+      vertical-align: middle;
+      transition: color 0.2s;
+    }
+    #sidebar .btn span {
+      display: none;
+      margin-left: 1.1rem;
+      white-space: nowrap;
+      transition: opacity 0.2s, margin 0.2s;
+      opacity: 0;
+    }
+    #sidebar:hover, #sidebar:focus-within {
+      width: 300px;
+      box-shadow: 0 8px 32px #e1060066;
+    }
+    #sidebar:hover .btn span, #sidebar:focus-within .btn span {
+      display: inline;
+      opacity: 1;
+      margin-left: 1.1rem;
+    }
+    #sidebar .btn:hover, #sidebar .btn:focus, #sidebar .btn.active {
+      background: #e10600;
+      color: #fff;
+    }
+    @media (max-width: 991px) {
+      #sidebar { width: 100vw; position: static; }
+      #sidebar .btn span { display: inline !important; opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="d-flex" style="min-height:100vh;">
+    <nav id="sidebar" class="bg-dark" style="position:relative; z-index:10;">
+      <ul class="nav flex-column pt-4" style="height:100vh;">
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Бойцы" onclick="location.href='/admin-fighters.html'"><i class="bi bi-person-fill"></i><span class="ms-3">Бойцы</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Тренеры" onclick="location.href='/admin-coaches.html'"><i class="bi bi-people-fill"></i><span class="ms-3">Тренеры</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Виды спорта" onclick="location.href='/admin-sports.html'"><i class="bi bi-award-fill"></i><span class="ms-3">Виды спорта</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Новости" onclick="location.href='/admin-news.html'"><i class="bi bi-newspaper"></i><span class="ms-3">Новости</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Турниры" onclick="location.href='/admin-tournaments.html'"><i class="bi bi-trophy-fill"></i><span class="ms-3">Турниры</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Турнирные сетки" onclick="location.href='/admin-brackets.html'"><i class="bi bi-diagram-3-fill"></i><span class="ms-3">Турнирные сетки</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Сохранённые сетки" onclick="location.href='/admin-brackets-list.html'"><i class="bi bi-archive-fill"></i><span class="ms-3">Сохранённые сетки</span></button></li>
+        <li class="nav-item mb-2"><button class="btn admin-btn w-100" title="Клубы" onclick="alert('Скоро!')"><i class="bi bi-building"></i><span class="ms-3">Клубы</span></button></li>
+        <li class="nav-item mt-auto mb-2"><button class="btn logout-btn w-100" id="logout"><i class="bi bi-box-arrow-right"></i><span class="ms-3">Выйти</span></button></li>
+      </ul>
+    </nav>
+    <div class="admin-card">
+      <h2 class="mb-4">Управление тренерами</h2>
+      <button class="btn add-btn w-100" id="add-coach">Добавить тренера</button>
+      <input type="text" class="form-control mb-3" id="search-coach" placeholder="Поиск по имени тренера...">
+      <div id="coaches-list"></div>
+      <a href="/admin.html" class="btn btn-secondary w-100 mt-4">Назад в админ-панель</a>
+    </div>
+  </div>
+
+  <!-- Модальное окно для добавления/редактирования тренера -->
+  <div class="modal fade" id="coachModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content bg-dark text-white">
+        <form id="coach-form">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalTitle">Добавить тренера</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="coach-id">
+            <div class="mb-3">
+              <label class="form-label">Имя</label>
+              <input type="text" class="form-control" id="coach-name" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Вид спорта</label>
+              <select class="form-select" id="coach-sport" required>
+                <!-- Виды спорта будут подгружаться динамически -->
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Клуб</label>
+              <input type="text" class="form-control" id="coach-club">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Пол</label>
+              <select class="form-select" id="coach-gender" required>
+                <option value="мужской">Мужской</option>
+                <option value="женский">Женский</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Опыт (лет)</label>
+              <input type="number" class="form-control" id="coach-experience" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Фото</label>
+              <input type="file" class="form-control" id="coach-photo" accept="image/*">
+              <img id="photo-preview" src="" alt="" style="max-width:100px;max-height:100px;display:none;margin-top:10px;">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+            <button type="submit" class="btn btn-danger">Сохранить</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    if (!localStorage.getItem('admin-auth')) {
+      window.location.href = '/login.html';
+    }
+    let coaches = [];
+    let editingId = null;
+    const coachModal = new bootstrap.Modal(document.getElementById('coachModal'));
+    const form = document.getElementById('coach-form');
+    const photoInput = document.getElementById('coach-photo');
+    const photoPreview = document.getElementById('photo-preview');
+
+    async function loadCoaches() {
+      const res = await fetch('/api/coaches');
+      coaches = await res.json();
+      renderCoaches();
+    }
+    function renderCoaches() {
+      const list = document.getElementById('coaches-list');
+      const search = document.getElementById('search-coach').value.trim().toLowerCase();
+      list.innerHTML = '';
+      coaches.filter(c => c.name.toLowerCase().includes(search)).forEach(c => {
+        const row = document.createElement('div');
+        row.className = 'coach-row';
+        row.innerHTML = `
+          <div class="coach-info">
+            <div class="coach-name">${c.name}</div>
+            <div class="coach-meta">Вид спорта: <b>${c.sport}</b> | Клуб: <b>${c.club || '-'}</b> | Пол: <b>${c.gender}</b> | Опыт: <b>${c.experience} лет</b></div>
+          </div>
+          <div>
+            <button class="admin-btn" onclick="editCoach('${c.id}')">Редактировать</button>
+            <button class="admin-btn" onclick="deleteCoach('${c.id}')">Удалить</button>
+          </div>
+        `;
+        list.appendChild(row);
+      });
+    }
+    document.getElementById('search-coach').oninput = renderCoaches;
+    window.editCoach = function(id) {
+      const c = coaches.find(x => x.id == id);
+      editingId = id;
+      document.getElementById('modalTitle').textContent = 'Редактировать тренера';
+      document.getElementById('coach-id').value = c.id;
+      document.getElementById('coach-name').value = c.name;
+      document.getElementById('coach-sport').value = c.sport;
+      document.getElementById('coach-club').value = c.club || '';
+      document.getElementById('coach-gender').value = c.gender;
+      document.getElementById('coach-experience').value = c.experience;
+      if (c.photo) {
+        photoPreview.src = c.photo;
+        photoPreview.style.display = '';
+      } else {
+        photoPreview.style.display = 'none';
+      }
+      photoInput.value = '';
+      coachModal.show();
+    }
+    window.deleteCoach = async function(id) {
+      if (confirm('Удалить тренера?')) {
+        await fetch('/api/coaches/' + id, { method: 'DELETE' });
+        loadCoaches();
+      }
+    }
+    document.getElementById('add-coach').onclick = function() {
+      editingId = null;
+      document.getElementById('modalTitle').textContent = 'Добавить тренера';
+      form.reset();
+      photoPreview.style.display = 'none';
+      coachModal.show();
+    };
+    photoInput.onchange = function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          photoPreview.src = evt.target.result;
+          photoPreview.style.display = '';
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+    form.onsubmit = async function(e) {
+      e.preventDefault();
+      const data = {
+        name: document.getElementById('coach-name').value,
+        sport: document.getElementById('coach-sport').value,
+        club: document.getElementById('coach-club').value,
+        gender: document.getElementById('coach-gender').value,
+        experience: +document.getElementById('coach-experience').value,
+        photo: (photoPreview.src && photoPreview.style.display !== 'none') ? photoPreview.src : (editingId ? coaches.find(x => x.id == editingId).photo : ''),
+      };
+      if (editingId) {
+        await fetch('/api/coaches/' + editingId, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+      } else {
+        await fetch('/api/coaches', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+      }
+      coachModal.hide();
+      loadCoaches();
+    };
+    // Динамическая загрузка видов спорта в форму тренера
+    async function loadCoachSportOptions() {
+      const res = await fetch('/api/sports');
+      const sports = await res.json();
+      const select = document.getElementById('coach-sport');
+      select.innerHTML = sports.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+    }
+    loadCoachSportOptions();
+    loadCoaches();
+    document.getElementById('logout').onclick = function() {
+      localStorage.removeItem('admin-auth');
+      window.location.href = '/login.html';
+    };
+  </script>
+</body>
+</html> 

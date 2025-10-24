@@ -1,0 +1,38 @@
+node_modules/
+.env
+.DS_Store
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# User data
+AppData/
+NTUSER.DAT*
+*.regtrans-ms
+
+# Cache files
+*.cache
+Cache_Data/
+
+# Media files
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.mp4
+*.avi
+*.mov
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp

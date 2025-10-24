@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Профиль тренера — Sherdoc</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #111 60%, #e10600 100%);
+      color: #fff;
+      min-height: 100vh;
+    }
+    .profile-card {
+      background: #181818cc;
+      border-radius: 18px;
+      box-shadow: 0 4px 24px #e1060033;
+      padding: 2rem 2rem 1rem 2rem;
+      margin-top: 2rem;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    .profile-img {
+      width: 180px;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 4px solid #e10600;
+      box-shadow: 0 2px 16px #e1060033;
+      margin-bottom: 1rem;
+    }
+    .profile-name {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+    .profile-meta {
+      font-size: 1.1rem;
+      color: #e0e0e0;
+      margin-bottom: 1.2rem;
+    }
+    .section-title {
+      color: #e10600;
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      border-left: 5px solid #e10600;
+      padding-left: 12px;
+    }
+    .student-list {
+      margin-top: 1.5rem;
+    }
+    .student-link {
+      color: #e10600;
+      text-decoration: none;
+      font-weight: 600;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+    .student-link:hover {
+      color: #fff;
+      text-decoration: underline;
+    }
+    a.back-link {
+      color: #e10600;
+      text-decoration: none;
+      font-size: 1.1rem;
+      margin-left: 1rem;
+    }
+    a.back-link:hover {
+      text-decoration: underline;
+      color: #fff;
+    }
+    #not-found {
+      margin-top: 4rem;
+      text-align: center;
+      color: #e10600;
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="/coaches.html" class="back-link"><i class="bi bi-arrow-left"></i> К списку тренеров</a>
+    <div id="profile"></div>
+    <div id="not-found" style="display:none;">Тренер не найден</div>
+  </div>
+  <script>
+    async function loadCoach() {
+      const params = new URLSearchParams(window.location.search);
+      const name = params.get('name');
+      if (!name) {
+        document.getElementById('not-found').style.display = '';
+        return;
+      }
+      // Получаем тренера
+      const res = await fetch(`/api/coaches?sport=&name=${encodeURIComponent(name)}`);
+      const coaches = await res.json();
+      if (!coaches.length) {
+        document.getElementById('not-found').style.display = '';
+        return;
+      }
+      const c = coaches[0];
+      // Получаем учеников
+      const fightersRes = await fetch(`/api/fighters?coach=${encodeURIComponent(c.name)}`);
+      const students = await fightersRes.json();
+      const profile = document.getElementById('profile');
+      profile.innerHTML = `
+        <div class="profile-card text-center">
+          <img src="${c.photo || 'https://via.placeholder.com/180'}" alt="Фото тренера" class="profile-img">
+          <div class="profile-name">${c.name}</div>
+          <div class="profile-meta">Вид спорта: <b>${c.sport}</b> | Пол: <b>${c.gender}</b></div>
+          <div class="profile-meta">Клуб: <b>${c.club || '-'} </b> | Опыт: <b>${c.experience} лет</b></div>
+          <div class="section-title">Ученики</div>
+          <div class="row student-list justify-content-center">
+            ${students.length ? students.map(s => `
+              <div class='col-12 col-md-4 mb-4'>
+                <div class='fighter-card h-100 d-flex flex-column align-items-center'>
+                  <img src='${s.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}' class='fighter-img mb-2' alt='Фото бойца'>
+                  <div class='fighter-name'>${s.name}</div>
+                  <div class='fighter-meta'>Год рождения: <b>${s.birthyear || '-'}</b></div>
+                  <div class='fighter-meta'>Победы: <b>${s.wins}</b> | Поражения: <b>${s.losses}</b></div>
+                  <a class='fighter-link mt-2' href='/fighter.html?name=${encodeURIComponent(s.name)}'>Профиль</a>
+                </div>
+              </div>
+            `).join('') : "<span class='text-secondary'>Нет учеников</span>"}
+          </div>
+        </div>
+      `;
+    }
+    loadCoach();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 
