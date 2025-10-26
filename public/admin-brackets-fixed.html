@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админ: Турнирные сетки — Sherdoc</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #111 60%, #e10600 100%);
+      color: #fff;
+      min-height: 100vh;
+    }
+    .admin-card {
+      background: #181818cc;
+      border-radius: 18px;
+      box-shadow: 0 4px 24px #e1060033;
+      padding: 2.5rem 2rem 2rem 2rem;
+      width: 100%;
+      max-width: 1200px;
+      margin: 3rem auto;
+    }
+    .bracket-section {
+      background: #222;
+      border-radius: 10px;
+      margin-bottom: 1.5rem;
+      padding: 1.5rem;
+    }
+    .fighter-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .fighter-item {
+      background: #181818;
+      border-radius: 8px;
+      padding: 0.7rem 1.2rem;
+      color: #fff;
+      border: 2px solid #e10600;
+      cursor: pointer;
+      transition: background 0.2s, border 0.2s;
+      user-select: none;
+    }
+    .fighter-item.selected {
+      background: #e10600;
+      color: #fff;
+      border: 2px solid #fff;
+    }
+    
+    /* Bracket Visualization Styles */
+    #bracket-visual {
+      overflow-x: auto;
+      padding: 2rem 0;
+      scrollbar-width: thin;
+      scrollbar-color: #e10600 #222;
+      background: #111;
+      border-radius: 10px;
+      position: relative;
+    }
+    
+    .bracket-wrapper {
+      position: relative;
+      min-height: 600px;
+      padding: 2rem;
+    }
+    
+    .bracket-container {
+      position: relative;
+      min-height: 600px;
+    }
+    
+    .round {
+      position: relative;
+    }
+    
+    .round-title {
+      text-align: center;
+      color: #e10600;
+      font-weight: 700;
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .match {
+      position: absolute;
+      background: #181818;
+      border-radius: 12px;
+      padding: 1rem;
+      border: 2px solid #333;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+      min-height: 80px;
+      width: 200px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      z-index: 2;
+    }
+    
+    .match:hover {
+      border-color: #e10600;
+      box-shadow: 0 6px 20px rgba(225, 6, 0, 0.2);
+    }
+    
+    .match.completed {
+      border-color: #28a745;
+      background: #1a2e1a;
+    }
+    
+    .fighter-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0.8rem;
+      margin: 0.3rem 0;
+      background: #222;
+      border-radius: 8px;
+      border: 1px solid #444;
+      transition: all 0.2s ease;
+      font-size: 0.9rem;
+    }
+    
+    .fighter-item:hover {
+      background: #333;
+      border-color: #e10600;
+    }
+    
+    .fighter-item.winner {
+      background: #e10600;
+      color: #fff;
+      border-color: #fff;
+      font-weight: 600;
+    }
+    
+    .fighter-item.bye {
+      color: #777;
+      border-style: dashed;
+      justify-content: center;
+      background: #111;
+    }
+    
+    .fighter-item button {
+      flex-shrink: 0;
+      margin-left: 0.5rem;
+      padding: 0.3rem 0.6rem;
+      font-size: 0.8rem;
+    }
+    
+    /* SVG Connectors */
+    svg.connectors {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+    
+    .connector-line {
+      stroke: #e10600;
+      stroke-width: 2;
+      fill: none;
+      stroke-dasharray: 5,5;
+      animation: dash 2s linear infinite;
+    }
+    
+    @keyframes dash {
+      to {
+        stroke-dashoffset: -10;
+      }
+    }
+    
+    .btn-generate {
+      background: #e10600;
+      color: #fff;
+      border: none;
+      font-weight: 600;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+    }
+    .btn-generate:hover {
+      background: #b00500;
+    }
+    .btn-save {
+      background: #222;
+      color: #e10600;
+      border: none;
+      font-weight: 600;
+      border-radius: 10px;
+      margin-top: 1rem;
+    }
+    .btn-save:hover {
+      background: #e10600;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-card">
+    <h2 class="text-center mb-4">Турнирные сетки</h2>
+    
+    <div class="bracket-section">
+      <h4>Настройки турнира</h4>
+      <div class="row mb-3">
+        <div class="col-md-4">
+          <label class="form-label">Турнир:</label>
+          <select class="form-select" id="select-tournament">
+            <option value="">Выберите турнир</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Вид спорта:</label>
+          <select class="form-select" id="select-sport">
+            <option value="">Выберите вид спорта</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Весовая категория:</label>
+          <select class="form-select" id="select-weight">
+            <option value="">Все веса</option>
+            <option value="60">60 кг</option>
+            <option value="65">65 кг</option>
+            <option value="70">70 кг</option>
+            <option value="75">75 кг</option>
+            <option value="80">80 кг</option>
+            <option value="85">85 кг</option>
+            <option value="90">90 кг</option>
+            <option value="95">95 кг</option>
+            <option value="100">100+ кг</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-generate" id="load-fighters">Загрузить бойцов</button>
+    </div>
+    
+    <div id="fighters-block" style="display:none;">
+      <h5>Выберите участников турнира:</h5>
+      <div class="fighter-list" id="fighter-list"></div>
+      <button class="btn btn-generate" id="generate-bracket">Сгенерировать сетку</button>
+    </div>
+    
+    <div id="bracket-block" style="display:none;">
+      <h5>Турнирная сетка:</h5>
+      <div class="bracket-wrapper">
+        <svg class="connectors" id="bracket-connectors"></svg>
+        <div class="bracket-container" id="bracket-visual"></div>
+      </div>
+      <div class="mt-3">
+        <button class="btn btn-save" id="save-bracket">Сохранить сетку</button>
+        <button class="btn btn-secondary ms-2" id="advance-round">Следующий раунд</button>
+        <button class="btn btn-info ms-2" id="complete-matches">Завершить матчи</button>
+        <button class="btn btn-warning ms-2" id="reset-bracket">Сбросить сетку</button>
+      </div>
+    </div>
+    
+    <a href="/admin.html" class="btn btn-secondary w-100 mt-4">Назад в админ-панель</a>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Проверка авторизации
+    if (!localStorage.getItem('admin-auth')) {
+      window.location.href = '/login.html';
+    }
+    
+    let tournaments = [], sports = [], fighters = [], selectedFighters = [], bracket = null;
+    
+    // Инициализация
+    (async function init() {
+      await loadTournamentsAndSports();
+    })();
+    
+    // Загрузка турниров и видов спорта
+    async function loadTournamentsAndSports() {
+      const tRes = await fetch('/api/tournaments');
+      tournaments = await tRes.json();
+      const sRes = await fetch('/api/sports');
+      sports = await sRes.json();
+      
+      const tSel = document.getElementById('select-tournament');
+      tSel.innerHTML = tournaments.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+      const sSel = document.getElementById('select-sport');
+      sSel.innerHTML = sports.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+    }
+    
+    // Загрузка бойцов по фильтрам
+    document.getElementById('load-fighters').onclick = async function() {
+      const sport = document.getElementById('select-sport').value;
+      const weight = document.getElementById('select-weight').value;
+      
+      if (!sport) {
+        alert('Выберите вид спорта');
+        return;
+      }
+      
+      let url = `/api/fighters?sport=${encodeURIComponent(sport)}`;
+      if (weight) url += `&weight=${weight}`;
+      
+      const res = await fetch(url);
+      fighters = await res.json();
+      selectedFighters = [];
+      renderFighterList();
+      document.getElementById('fighters-block').style.display = '';
+      document.getElementById('bracket-block').style.display = 'none';
+    };
+    
+    // Рендер списка бойцов
+    function renderFighterList() {
+      const list = document.getElementById('fighter-list');
+      list.innerHTML = '';
+      fighters.forEach(f => {
+        const div = document.createElement('div');
+        div.className = 'fighter-item';
+        div.textContent = `${f.name} (${f.club}) - ${f.weight}кг`;
+        div.onclick = () => {
+          if (selectedFighters.includes(f.id)) {
+            selectedFighters = selectedFighters.filter(id => id !== f.id);
+            div.classList.remove('selected');
+          } else {
+            selectedFighters.push(f.id);
+            div.classList.add('selected');
+          }
+        };
+        list.appendChild(div);
+      });
+    }
+    
+    // Генерация турнирной сетки
+    document.getElementById('generate-bracket').onclick = async function() {
+      const selected = fighters.filter(f => selectedFighters.includes(f.id));
+      if (selected.length < 2) {
+        alert('Выберите минимум двух бойцов!');
+        return;
+      }
+      
+      bracket = generateTournamentBracket(selected);
+      renderBracketTable();
+      document.getElementById('bracket-block').style.display = '';
+    };
+    
+    // Генерация турнирной сетки
+    function generateTournamentBracket(fighters) {
+      const rounds = [];
+      let currentFighters = [...fighters];
+      
+      // Первый раунд
+      const firstRound = {
+        matches: []
+      };
+      
+      // Создаем пары для первого раунда
+      const pairs = generateFirstRoundNoTeammates(currentFighters);
+      pairs.forEach(pair => {
+        const match = {
+          fighters: pair,
+          winner: null
+        };
+        firstRound.matches.push(match);
+      });
+      
+      rounds.push(firstRound);
+      
+      // Создаем пустые раунды для будущих этапов
+      let remainingFighters = currentFighters.length;
+      while (remainingFighters > 1) {
+        remainingFighters = Math.ceil(remainingFighters / 2);
+        const nextRound = {
+          matches: []
+        };
+        
+        // Создаем пустые матчи для следующего раунда
+        for (let i = 0; i < remainingFighters; i++) {
+          nextRound.matches.push({
+            fighters: [null, null],
+            winner: null
+          });
+        }
+        
+        rounds.push(nextRound);
+      }
+      
+      return { rounds };
+    }
+    
+    // Генерация первого раунда с учётом клубов
+    function generateFirstRoundNoTeammates(fighters) {
+      const pool = [...fighters];
+      const pairs = [];
+      while (pool.length > 1) {
+        const f1 = pool.shift();
+        let idx = pool.findIndex(f => f.club !== f1.club);
+        if (idx === -1) idx = 0; // если все из одной команды
+        const f2 = pool.splice(idx, 1)[0];
+        pairs.push([f1, f2]);
+      }
+      if (pool.length === 1) pairs.push([pool[0]]);
+      return pairs;
+    }
+    
+    // Система турнирной сетки с правильным алгоритмом
+    function renderBracketTable() {
+      const container = document.getElementById('bracket-visual');
+      const svg = document.getElementById('bracket-connectors');
+      container.innerHTML = '';
+      svg.innerHTML = '';
+      
+      if (!bracket || !bracket.rounds || bracket.rounds.length === 0) {
+        container.innerHTML = '<p>Сетка не сгенерирована</p>';
+        return;
+      }
+      
+      // Параметры
+      const matchHeight = 80;
+      const matchGap = 40;
+      const columnGap = 250;
+      
+      // Создаем контейнер для раундов
+      const bracketContainer = document.createElement('div');
+      bracketContainer.className = 'bracket-container';
+      container.appendChild(bracketContainer);
+      
+      let prevMatches = [];
+      
+      // Создаем раунды
+      bracket.rounds.forEach((round, roundIndex) => {
+        const roundDiv = document.createElement('div');
+        roundDiv.className = 'round';
+        bracketContainer.appendChild(roundDiv);
+        
+        const matches = [];
+        
+        // Создаем матчи в раунде
+        round.matches.forEach((match, matchIndex) => {
+          const matchDiv = document.createElement('div');
+          matchDiv.className = 'match';
+          if (match.winner !== null) {
+            matchDiv.classList.add('completed');
+          }
+          matchDiv.dataset.roundIndex = roundIndex;
+          matchDiv.dataset.matchIndex = matchIndex;
+          
+          // Добавляем бойцов в матч
+          match.fighters.forEach((fighter, fighterIndex) => {
+            if (fighter) {
+              const fighterDiv = document.createElement('div');
+              fighterDiv.className = 'fighter-item';
+              fighterDiv.textContent = fighter.name + (fighter.club ? ` (${fighter.club})` : '');
+              
+              if (match.winner === fighterIndex) {
+                fighterDiv.classList.add('winner');
+              }
+              if (fighter.by) {
+                fighterDiv.classList.add('bye');
+                fighterDiv.textContent = 'BYE';
+              }
+              
+              // Добавляем кнопку выбора победителя
+              if (match.fighters.length === 2 && match.fighters[0] && match.fighters[1] && match.winner === null) {
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-sm ' + (match.winner === fighterIndex ? 'btn-danger' : 'btn-outline-danger');
+                btn.textContent = '👑';
+                btn.onclick = () => {
+                  match.winner = fighterIndex;
+                  renderBracketTable();
+                };
+                fighterDiv.appendChild(btn);
+              }
+              
+              matchDiv.appendChild(fighterDiv);
+            } else {
+              // Создаем пустую ячейку
+              const emptyDiv = document.createElement('div');
+              emptyDiv.className = 'fighter-item bye';
+              emptyDiv.textContent = 'Пусто';
+              matchDiv.appendChild(emptyDiv);
+            }
+          });
+          
+          roundDiv.appendChild(matchDiv);
+          matches.push(matchDiv);
+        });
+        
+        // Простое позиционирование как в testbr.html
+        matches.forEach((match, i) => {
+          let y;
+          if (roundIndex === 0) {
+            y = i * (matchHeight + matchGap);
+          } else {
+            const prev1 = prevMatches[i * 2];
+            const prev2 = prevMatches[i * 2 + 1];
+            if (prev1 && prev2) {
+              y = (prev1.offsetTop + prev2.offsetTop) / 2;
+            } else if (prev1) {
+              y = prev1.offsetTop;
+            } else {
+              y = i * (matchHeight + matchGap);
+            }
+          }
+          match.style.top = y + 'px';
+          match.style.left = roundIndex * columnGap + 'px';
+          match.style.position = 'absolute';
+        });
+        
+        prevMatches = matches;
+      });
+      
+      // Рисуем SVG-соединители между раундами
+      setTimeout(() => drawConnectors(), 100);
+    }
+    
+    // Функция для рисования соединительных линий (простой алгоритм из testbr.html)
+    function drawConnectors() {
+      const svg = document.getElementById('bracket-connectors');
+      const container = document.getElementById('bracket-visual');
+      const rounds = container.querySelectorAll('.round');
+      
+      if (rounds.length < 2) return;
+      
+      // Устанавливаем размеры SVG
+      const containerRect = container.getBoundingClientRect();
+      svg.setAttribute('width', containerRect.width);
+      svg.setAttribute('height', containerRect.height);
+      
+      // Рисуем соединители между раундами как в testbr.html
+      for (let i = 0; i < rounds.length - 1; i++) {
+        const currentRound = rounds[i];
+        const nextRound = rounds[i + 1];
+        const currentMatches = currentRound.querySelectorAll('.match');
+        const nextMatches = nextRound.querySelectorAll('.match');
+        
+        currentMatches.forEach((match, matchIndex) => {
+          const nextMatchIndex = Math.floor(matchIndex / 2);
+          if (nextMatchIndex < nextMatches.length) {
+            const nextMatch = nextMatches[nextMatchIndex];
+            
+            const startX = match.offsetLeft + match.offsetWidth;
+            const endX = nextMatch.offsetLeft;
+            const y1 = match.offsetTop + match.offsetHeight / 2;
+            const y2 = nextMatch.offsetTop + nextMatch.offsetHeight / 2;
+            const yMid = (y1 + y2) / 2;
+            
+            // Рисуем квадратные линии как в testbr.html
+            drawSquareLine(startX, y1, endX, yMid);
+            drawSquareLine(startX, y2, endX, yMid);
+          }
+        });
+      }
+    }
+    
+    // Функция рисования квадратных линий (из testbr.html)
+    function drawSquareLine(x1, y1, x2, y2) {
+      const svg = document.getElementById('bracket-connectors');
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      const midX = (x1 + x2) / 2;
+      path.setAttribute('d', `M ${x1} ${y1} H ${midX} V ${y2} H ${x2}`);
+      path.setAttribute('stroke', '#e10600');
+      path.setAttribute('stroke-width', '2');
+      path.setAttribute('fill', 'none');
+      path.setAttribute('class', 'connector-line');
+      svg.appendChild(path);
+    }
+    
+    // Сохранение сетки
+    document.getElementById('save-bracket').onclick = async function() {
+      if (!bracket) {
+        alert('Нет сетки для сохранения');
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/brackets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tournamentId: document.getElementById('select-tournament').value,
+            sport: document.getElementById('select-sport').value,
+            weight: document.getElementById('select-weight').value || 70,
+            gender: 'мужской',
+            fighters: selectedFighters,
+            bracket: bracket
+          })
+        });
+        
+        if (response.ok) {
+          alert('Сетка сохранена!');
+        } else {
+          alert('Ошибка при сохранении');
+        }
+      } catch (error) {
+        console.error('Error saving bracket:', error);
+        alert('Ошибка при сохранении');
+      }
+    };
+  </script>
+</body>
+</html>

@@ -66,7 +66,7 @@ EOF
 
 # Настраиваем Nginx
 echo "🌐 Настраиваем Nginx..."
-sudo cp nginx-sherdoc.conf /etc/nginx/sites-available/sherdoc.kg
+sudo cp nginx-sherdoc-http.conf /etc/nginx/sites-available/sherdoc.kg
 sudo ln -s /etc/nginx/sites-available/sherdoc.kg /etc/nginx/sites-enabled/
 sudo rm /etc/nginx/sites-enabled/default
 

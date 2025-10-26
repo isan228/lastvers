@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Табло боя — Sherdoc</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      background: #000;
+      color: #fff;
+      font-family: 'Arial', sans-serif;
+      overflow: hidden;
+    }
+    
+    .scoreboard-container {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #000 0%, #1a1a1a 100%);
+    }
+    
+    .scoreboard {
+      width: 90%;
+      max-width: 1200px;
+      background: #000;
+      border: 5px solid #e10600;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 0 50px rgba(225, 6, 0, 0.3);
+    }
+    
+    .fighters-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    
+    .fighter {
+      text-align: center;
+      flex: 1;
+    }
+    
+    .fighter-name {
+      font-size: 36px;
+      font-weight: bold;
+      color: #fff;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    
+    .fighter-score {
+      font-size: 120px;
+      font-weight: bold;
+      color: #e10600;
+      text-shadow: 0 0 20px rgba(225, 6, 0, 0.5);
+      line-height: 1;
+    }
+    
+    .center-info {
+      text-align: center;
+      margin: 0 40px;
+    }
+    
+    .round-info {
+      font-size: 28px;
+      color: #ccc;
+      margin-bottom: 20px;
+    }
+    
+    .timer {
+      font-size: 80px;
+      font-weight: bold;
+      color: #00ff00;
+      text-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+      font-family: 'Courier New', monospace;
+    }
+    
+    .status {
+      font-size: 24px;
+      color: #e10600;
+      margin-top: 20px;
+      text-transform: uppercase;
+      font-weight: bold;
+    }
+    
+    .vs {
+      font-size: 48px;
+      color: #e10600;
+      font-weight: bold;
+      margin: 0 20px;
+    }
+    
+    .loading {
+      text-align: center;
+      font-size: 24px;
+      color: #666;
+    }
+    
+    .error {
+      text-align: center;
+      font-size: 24px;
+      color: #e10600;
+    }
+    
+    /* Анимации */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    .fighter-score.pulse {
+      animation: pulse 1s infinite;
+    }
+    
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0.3; }
+    }
+    
+    .timer.blink {
+      animation: blink 1s infinite;
+    }
+    
+    /* Стили для отображения победителя */
+    .winner-display {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    
+    .winner-text {
+      font-size: 120px;
+      font-weight: bold;
+      color: #e10600;
+      text-shadow: 0 0 50px rgba(225, 6, 0, 0.8);
+      text-transform: uppercase;
+      letter-spacing: 5px;
+      animation: pulse 1s infinite;
+      text-align: center;
+      line-height: 1.2;
+    }
+  </style>
+</head>
+<body>
+  <!-- Элемент для отображения победителя -->
+  <div class="winner-display" id="winner-display">
+    <div class="winner-text" id="winner-text">ПОБЕДИЛ</div>
+  </div>
+  
+  <div class="scoreboard-container">
+    <div class="scoreboard" id="scoreboard">
+      <div class="loading" id="loading">
+        Загрузка табло...
+      </div>
+      
+      <div class="fighters-row" id="fighters-row" style="display: none;">
+        <div class="fighter">
+          <div class="fighter-name" id="fighter1-name">Боец 1</div>
+          <div class="fighter-score" id="fighter1-score">0</div>
+        </div>
+        
+        <div class="center-info">
+          <div class="vs">VS</div>
+          <div class="round-info" id="round-info">Раунд 1</div>
+          <div class="timer" id="timer">3:00</div>
+          <div class="status" id="status">Подготовка</div>
+        </div>
+        
+        <div class="fighter">
+          <div class="fighter-name" id="fighter2-name">Боец 2</div>
+          <div class="fighter-score" id="fighter2-score">0</div>
+        </div>
+      </div>
+      
+      <div class="error" id="error" style="display: none;">
+        Ошибка загрузки табло
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let updateInterval;
+    let timerInterval;
+    let currentTime = 0;
+    let isTimerRunning = false;
+    let lastStatus = '';
+    
+    // Загрузка данных табло
+    function loadScoreboard() {
+      fetch('/api/scoreboard/data')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            updateScoreboard(data.data);
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('fighters-row').style.display = 'flex';
+            document.getElementById('error').style.display = 'none';
+          } else {
+            showError();
+          }
+        })
+        .catch(error => {
+          console.error('Ошибка загрузки табло:', error);
+          showError();
+        });
+    }
+    
+    // Обновление табло
+    function updateScoreboard(data) {
+      // Если нужно показать победителя
+      if (data.showWinner && data.winner) {
+        // Скрываем все элементы табло
+        document.getElementById('fighter1-name').style.display = 'none';
+        document.getElementById('fighter2-name').style.display = 'none';
+        document.getElementById('fighter1-score').style.display = 'none';
+        document.getElementById('fighter2-score').style.display = 'none';
+        document.getElementById('round-info').style.display = 'none';
+        document.getElementById('timer').style.display = 'none';
+        document.getElementById('status').style.display = 'none';
+        
+        // Показываем только крупную надпись ПОБЕДА + имя бойца
+        const winnerDisplay = document.getElementById('winner-display');
+        const winnerText = document.getElementById('winner-text');
+        if (winnerDisplay && winnerText) {
+          winnerDisplay.style.display = 'flex';
+          const winnerName = data.winner === 1 ? data.fighter1.name : data.fighter2.name;
+          winnerText.textContent = `ПОБЕДА ${winnerName}`;
+        }
+        
+        return;
+      }
+      
+      // Обычное отображение - показываем все элементы
+      document.getElementById('fighter1-name').style.display = 'block';
+      document.getElementById('fighter2-name').style.display = 'block';
+      document.getElementById('fighter1-score').style.display = 'block';
+      document.getElementById('fighter2-score').style.display = 'block';
+      document.getElementById('round-info').style.display = 'block';
+      document.getElementById('timer').style.display = 'block';
+      document.getElementById('status').style.display = 'block';
+      
+      // Скрываем надпись победителя
+      const winnerDisplay = document.getElementById('winner-display');
+      if (winnerDisplay) {
+        winnerDisplay.style.display = 'none';
+      }
+      
+      document.getElementById('fighter1-name').textContent = data.fighter1.name;
+      document.getElementById('fighter2-name').textContent = data.fighter2.name;
+      document.getElementById('fighter1-score').textContent = data.fighter1.score;
+      document.getElementById('fighter2-score').textContent = data.fighter2.score;
+      document.getElementById('round-info').textContent = 'Бой';
+      
+      // Убираем анимации
+      document.getElementById('fighter1-name').style.animation = '';
+      document.getElementById('fighter2-name').style.animation = '';
+      document.getElementById('round-info').style.animation = '';
+      
+      // Статус боя
+      const statusMap = {
+        'preparing': 'Подготовка',
+        'fighting': 'Идет бой',
+        'break': 'Перерыв',
+        'finished': 'Завершен'
+      };
+      document.getElementById('status').textContent = statusMap[data.status] || 'Подготовка';
+      
+      // Обновляем таймер только если статус изменился
+      const time = data.roundTime || 180;
+      const statusChanged = lastStatus !== data.status;
+      
+      // Если статус изменился, обновляем время
+      if (statusChanged) {
+        if (data.status === 'fighting') {
+          currentTime = time;
+          startTimer();
+        } else {
+          stopTimer();
+          currentTime = time;
+        }
+      }
+      
+      // Если статус не изменился, но таймер не запущен и статус "fighting", запускаем
+      if (!statusChanged && data.status === 'fighting' && !isTimerRunning) {
+        startTimer();
+      }
+      
+      // Сохраняем текущий статус
+      lastStatus = data.status;
+      
+      // Обновляем отображение времени
+      updateTimerDisplay();
+      
+      // Анимации
+      const score1 = document.getElementById('fighter1-score');
+      const score2 = document.getElementById('fighter2-score');
+      const timer = document.getElementById('timer');
+      
+      // Убираем предыдущие анимации
+      score1.classList.remove('pulse');
+      score2.classList.remove('pulse');
+      timer.classList.remove('blink');
+      
+      // Добавляем анимации в зависимости от статуса
+      if (data.status === 'fighting') {
+        timer.classList.add('blink');
+      }
+      
+      // Анимация при изменении счета
+      if (data.fighter1.score > 0) {
+        score1.classList.add('pulse');
+        setTimeout(function() { score1.classList.remove('pulse'); }, 1000);
+      }
+      if (data.fighter2.score > 0) {
+        score2.classList.add('pulse');
+        setTimeout(function() { score2.classList.remove('pulse'); }, 1000);
+      }
+    }
+    
+    // Показ ошибки
+    function showError() {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('fighters-row').style.display = 'none';
+      document.getElementById('error').style.display = 'block';
+    }
+    
+    // Запуск таймера
+    function startTimer() {
+      if (isTimerRunning) return;
+      isTimerRunning = true;
+      timerInterval = setInterval(() => {
+        if (currentTime > 0) {
+          currentTime--;
+          updateTimerDisplay();
+        } else {
+          stopTimer();
+        }
+      }, 1000);
+    }
+    
+    // Остановка таймера
+    function stopTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      isTimerRunning = false;
+    }
+    
+    // Обновление отображения таймера
+    function updateTimerDisplay() {
+      const minutes = Math.floor(currentTime / 60);
+      const seconds = currentTime % 60;
+      document.getElementById('timer').textContent = 
+        `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+    
+    // Автообновление каждые 2 секунды
+    function startAutoUpdate() {
+      updateInterval = setInterval(loadScoreboard, 2000);
+    }
+    
+    // Остановка автообновления
+    function stopAutoUpdate() {
+      if (updateInterval) {
+        clearInterval(updateInterval);
+      }
+      stopTimer();
+    }
+    
+    // Обработка видимости страницы
+    document.addEventListener('visibilitychange', function() {
+      if (document.hidden) {
+        stopAutoUpdate();
+      } else {
+        startAutoUpdate();
+      }
+    });
+    
+    // Загрузка при старте
+    loadScoreboard();
+    startAutoUpdate();
+    
+    // Обработка ошибок
+    window.addEventListener('error', function() {
+      showError();
+    });
+  </script>
+</body>
+</html>

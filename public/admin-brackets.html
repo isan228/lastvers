@@ -178,84 +178,133 @@
       color: #fff;
     }
 
-    /* New Bracket Visualization Styles */
+    /* Improved Bracket Visualization Styles */
     #bracket-visual {
       overflow-x: auto;
-      padding-bottom: 1rem;
+      padding: 2rem 0;
       scrollbar-width: thin;
       scrollbar-color: #e10600 #222;
+      background: #111;
+      border-radius: 10px;
+      position: relative;
     }
+    
+    .bracket-wrapper {
+      position: relative;
+      min-height: 600px;
+      padding: 2rem;
+    }
+    
     .bracket-container {
       display: flex;
+      gap: 3rem;
+      align-items: flex-start;
       min-width: fit-content;
     }
+    
     .round {
       display: flex;
       flex-direction: column;
-      justify-content: space-around;
-      flex-grow: 1;
-      min-width: 330px; /* Width of a match + spacing */
-      padding: 2rem 0;
+      gap: 2rem;
+      min-width: 250px;
     }
+    
+    .round-title {
+      text-align: center;
+      color: #e10600;
+      font-weight: 700;
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
     .match {
       position: relative;
-    }
-    .pair-container {
       background: #181818;
-      border-radius: 10px;
-      padding: 0.8rem;
-      border: 1px solid #e1060033;
-      margin-right: 40px; /* Space for connector */
-      min-height: 130px; /* Ensure matches have height for lines */
+      border-radius: 12px;
+      padding: 1rem;
+      border: 2px solid #333;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+      min-height: 80px;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 0.5rem;
     }
-    .fighter-item.bye {
-      color: #777;
-      border-style: dashed;
-      justify-content: center;
+    
+    .match:hover {
+      border-color: #e10600;
+      box-shadow: 0 6px 20px rgba(225, 6, 0, 0.2);
     }
+    
+    .match.completed {
+      border-color: #28a745;
+      background: #1a2e1a;
+    }
+    
     .fighter-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      padding: 0.5rem 0.8rem;
+      margin: 0.3rem 0;
+      background: #222;
+      border-radius: 8px;
+      border: 1px solid #444;
+      transition: all 0.2s ease;
+      font-size: 0.9rem;
     }
+    
+    .fighter-item:hover {
+      background: #333;
+      border-color: #e10600;
+    }
+    
+    .fighter-item.winner {
+      background: #e10600;
+      color: #fff;
+      border-color: #fff;
+      font-weight: 600;
+    }
+    
+    .fighter-item.bye {
+      color: #777;
+      border-style: dashed;
+      justify-content: center;
+      background: #111;
+    }
+    
     .fighter-item button {
       flex-shrink: 0;
+      margin-left: 0.5rem;
+      padding: 0.3rem 0.6rem;
+      font-size: 0.8rem;
     }
-
-    /* Connector lines */
-    .connector {
+    
+    /* SVG Connectors */
+    svg.connectors {
       position: absolute;
       top: 0;
-      right: 0;
-      width: 40px;
-      height: 100%;
-      z-index: 1;
-    }
-    .line-h {
-      position: absolute;
-      top: 50%;
       left: 0;
       width: 100%;
-      height: 2px;
-      background: #e10600;
-      transform: translateY(-1px);
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
     }
-    .line-v {
-      position: absolute;
-      left: 0;
-      width: 2px;
-      height: 50%;
-      background: #e10600;
+    
+    .connector-line {
+      stroke: #e10600;
+      stroke-width: 2;
+      fill: none;
+      stroke-dasharray: 5,5;
+      animation: dash 2s linear infinite;
     }
-    .match:nth-child(odd) .line-v {
-      top: 50%;
-    }
-    .match:nth-child(even) .line-v {
-      bottom: 50%;
+    
+    @keyframes dash {
+      to {
+        stroke-dashoffset: -10;
+      }
     }
     .match:last-child:nth-child(odd) .line-v {
       display: none;
@@ -373,7 +422,10 @@
       </div>
       <div id="bracket-block" style="display:none;">
         <h5>Турнирная сетка:</h5>
-        <div class="bracket-container" id="bracket-visual"></div>
+        <div class="bracket-wrapper">
+          <svg class="connectors" id="bracket-connectors"></svg>
+          <div class="bracket-container" id="bracket-visual"></div>
+        </div>
         <div class="mt-3">
         <button class="btn btn-save" id="save-bracket">Сохранить сетку</button>
           <button class="btn btn-secondary ms-2" id="advance-round">Следующий раунд</button>
@@ -675,26 +727,37 @@
       }
     }
 
-    // Новая система турнирной сетки с перетаскиванием
+    // Улучшенная система турнирной сетки с SVG-соединителями
     function renderBracketTable() {
       const container = document.getElementById('bracket-visual');
+      const svg = document.getElementById('bracket-connectors');
       container.innerHTML = '';
+      svg.innerHTML = '';
       
       if (!bracket || !bracket.rounds || bracket.rounds.length === 0) {
         container.innerHTML = '<p>Сетка не сгенерирована</p>';
         return;
       }
       
+      // Создаем контейнер для раундов
+      const bracketContainer = document.createElement('div');
+      bracketContainer.className = 'bracket-container';
+      container.appendChild(bracketContainer);
+      
       // Создаем раунды
       bracket.rounds.forEach((round, roundIndex) => {
         const roundDiv = document.createElement('div');
-        roundDiv.className = 'bracket-round';
-        roundDiv.innerHTML = `<h4>Раунд ${roundIndex + 1}</h4>`;
+        roundDiv.className = 'round';
+        
+        const roundTitle = document.createElement('div');
+        roundTitle.className = 'round-title';
+        roundTitle.textContent = `Раунд ${roundIndex + 1}`;
+        roundDiv.appendChild(roundTitle);
         
         // Создаем матчи в раунде
         round.matches.forEach((match, matchIndex) => {
           const matchDiv = document.createElement('div');
-          matchDiv.className = 'bracket-match';
+          matchDiv.className = 'match';
           if (match.winner !== undefined || match.result) {
             matchDiv.classList.add('completed');
           }
@@ -1342,6 +1405,62 @@
       localStorage.removeItem('admin-auth');
       window.location.href = '/login.html';
     };
+    
+    // Функция для рисования соединительных линий (для flex-структуры)
+    function drawConnectors() {
+      const svg = document.getElementById('bracket-connectors');
+      const container = document.getElementById('bracket-visual');
+      const rounds = container.querySelectorAll('.round');
+      
+      if (rounds.length < 2) return;
+      
+      // Устанавливаем размеры SVG
+      const containerRect = container.getBoundingClientRect();
+      svg.setAttribute('width', containerRect.width);
+      svg.setAttribute('height', containerRect.height);
+      
+      // Рисуем соединители между раундами
+      for (let i = 0; i < rounds.length - 1; i++) {
+        const currentRound = rounds[i];
+        const nextRound = rounds[i + 1];
+        const currentMatches = currentRound.querySelectorAll('.match');
+        const nextMatches = nextRound.querySelectorAll('.match');
+        
+        currentMatches.forEach((match, matchIndex) => {
+          const nextMatchIndex = Math.floor(matchIndex / 2);
+          if (nextMatchIndex < nextMatches.length) {
+            const nextMatch = nextMatches[nextMatchIndex];
+            
+            const matchRect = match.getBoundingClientRect();
+            const nextMatchRect = nextMatch.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            
+            const startX = matchRect.right - containerRect.left;
+            const startY = matchRect.top + matchRect.height / 2 - containerRect.top;
+            const endX = nextMatchRect.left - containerRect.left;
+            const endY = nextMatchRect.top + nextMatchRect.height / 2 - containerRect.top;
+            
+            const midX = (startX + endX) / 2;
+            
+            // Рисуем квадратные линии
+            drawSquareLine(startX, startY, endX, endY);
+          }
+        });
+      }
+    }
+    
+    // Функция рисования квадратных линий (из testbr.html)
+    function drawSquareLine(x1, y1, x2, y2) {
+      const svg = document.getElementById('bracket-connectors');
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      const midX = (x1 + x2) / 2;
+      path.setAttribute('d', `M ${x1} ${y1} H ${midX} V ${y2} H ${x2}`);
+      path.setAttribute('stroke', '#e10600');
+      path.setAttribute('stroke-width', '2');
+      path.setAttribute('fill', 'none');
+      path.setAttribute('class', 'connector-line');
+      svg.appendChild(path);
+    }
   </script>
 </body>
 </html> 

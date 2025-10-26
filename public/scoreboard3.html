@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Табло 3 — Sherdoc</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      background: #000;
+      color: #fff;
+      font-family: 'Arial', sans-serif;
+      overflow: hidden;
+    }
+    
+    .scoreboard-container {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #000 0%, #1a1a1a 100%);
+    }
+    
+    .scoreboard {
+      width: 90%;
+      max-width: 1200px;
+      background: #000;
+      border: 5px solid #ff00ff;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 0 50px rgba(255, 0, 255, 0.3);
+    }
+    
+    .judge-info {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: #ff00ff;
+      color: #000;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    
+    .fighters-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    
+    .fighter {
+      text-align: center;
+      flex: 1;
+    }
+    
+    .fighter-name {
+      font-size: 36px;
+      font-weight: bold;
+      color: #fff;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    
+    .fighter-score {
+      font-size: 120px;
+      font-weight: bold;
+      color: #ff00ff;
+      text-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
+      line-height: 1;
+    }
+    
+    .center-info {
+      text-align: center;
+      margin: 0 40px;
+    }
+    
+    .round-info {
+      font-size: 28px;
+      color: #ccc;
+      margin-bottom: 20px;
+    }
+    
+    .timer {
+      font-size: 80px;
+      font-weight: bold;
+      color: #ff00ff;
+      text-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
+      font-family: 'Courier New', monospace;
+    }
+    
+    .status {
+      font-size: 24px;
+      color: #ff00ff;
+      margin-top: 20px;
+      text-transform: uppercase;
+      font-weight: bold;
+    }
+    
+    .vs {
+      font-size: 48px;
+      color: #ff00ff;
+      font-weight: bold;
+      margin: 0 20px;
+    }
+    
+    .loading {
+      text-align: center;
+      font-size: 24px;
+      color: #666;
+    }
+    
+    .error {
+      text-align: center;
+      font-size: 24px;
+      color: #ff00ff;
+    }
+    
+    /* Анимации */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    .fighter-score.pulse {
+      animation: pulse 1s infinite;
+    }
+    
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0.3; }
+    }
+    
+    .timer.blink {
+      animation: blink 1s infinite;
+    }
+    
+    /* Стили для отображения победителя */
+    .winner-display {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    
+    .winner-text {
+      font-size: 120px;
+      font-weight: bold;
+      color: #ff00ff;
+      text-shadow: 0 0 50px rgba(255, 0, 255, 0.8);
+      text-transform: uppercase;
+      letter-spacing: 5px;
+      animation: pulse 1s infinite;
+      text-align: center;
+      line-height: 1.2;
+    }
+  </style>
+</head>
+<body>
+  <!-- Элемент для отображения победителя -->
+  <div class="winner-display" id="winner-display">
+    <div class="winner-text" id="winner-text">ПОБЕДА</div>
+  </div>
+  
+  <div class="scoreboard-container">
+    <div class="judge-info">СУДЬЯ 3</div>
+    <div class="scoreboard" id="scoreboard">
+      <div class="loading" id="loading">
+        Загрузка табло...
+      </div>
+      
+      <div class="fighters-row" id="fighters-row" style="display: none;">
+        <div class="fighter">
+          <div class="fighter-name" id="fighter1-name">Боец 1</div>
+          <div class="fighter-score" id="fighter1-score">0</div>
+        </div>
+        
+        <div class="center-info">
+          <div class="round-info" id="round-info">Бой</div>
+          <div class="timer" id="timer">3:00</div>
+          <div class="status" id="status">ПОДГОТОВКА</div>
+        </div>
+        
+        <div class="fighter">
+          <div class="fighter-name" id="fighter2-name">Боец 2</div>
+          <div class="fighter-score" id="fighter2-score">0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let updateInterval;
+    let timerInterval;
+    let currentTime = 0;
+    let isTimerRunning = false;
+    let lastStatus = '';
+
+    // Запуск таймера
+    function startTimer() {
+      if (isTimerRunning) return;
+      isTimerRunning = true;
+      timerInterval = setInterval(function() {
+        if (currentTime > 0) {
+          currentTime--;
+          updateTimerDisplay();
+        } else {
+          stopTimer();
+        }
+      }, 1000);
+    }
+
+    // Остановка таймера
+    function stopTimer() {
+      isTimerRunning = false;
+      if (timerInterval) {
+        clearInterval(timerInterval);
+      }
+    }
+
+    // Обновление отображения таймера
+    function updateTimerDisplay() {
+      const minutes = Math.floor(currentTime / 60);
+      const seconds = currentTime % 60;
+      document.getElementById('timer').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    // Обновление табло
+    function updateScoreboard(data) {
+      // Если нужно показать победителя
+      if (data.showWinner && data.winner) {
+        // Скрываем все элементы табло
+        document.getElementById('fighter1-name').style.display = 'none';
+        document.getElementById('fighter2-name').style.display = 'none';
+        document.getElementById('fighter1-score').style.display = 'none';
+        document.getElementById('fighter2-score').style.display = 'none';
+        document.getElementById('round-info').style.display = 'none';
+        document.getElementById('timer').style.display = 'none';
+        document.getElementById('status').style.display = 'none';
+        
+        // Показываем только крупную надпись ПОБЕДА + имя бойца
+        const winnerDisplay = document.getElementById('winner-display');
+        const winnerText = document.getElementById('winner-text');
+        if (winnerDisplay && winnerText) {
+          winnerDisplay.style.display = 'flex';
+          const winnerName = data.winner === 1 ? data.fighter1.name : data.fighter2.name;
+          winnerText.textContent = `ПОБЕДА ${winnerName}`;
+        }
+        
+        return;
+      }
+      
+      // Обычное отображение - показываем все элементы
+      document.getElementById('fighter1-name').style.display = 'block';
+      document.getElementById('fighter2-name').style.display = 'block';
+      document.getElementById('fighter1-score').style.display = 'block';
+      document.getElementById('fighter2-score').style.display = 'block';
+      document.getElementById('round-info').style.display = 'block';
+      document.getElementById('timer').style.display = 'block';
+      document.getElementById('status').style.display = 'block';
+      
+      // Скрываем надпись победителя
+      const winnerDisplay = document.getElementById('winner-display');
+      if (winnerDisplay) {
+        winnerDisplay.style.display = 'none';
+      }
+      
+      document.getElementById('fighter1-name').textContent = data.fighter1.name;
+      document.getElementById('fighter2-name').textContent = data.fighter2.name;
+      document.getElementById('fighter1-score').textContent = data.fighter1.score;
+      document.getElementById('fighter2-score').textContent = data.fighter2.score;
+      document.getElementById('round-info').textContent = 'Бой';
+      
+      // Убираем анимации
+      document.getElementById('fighter1-name').style.animation = '';
+      document.getElementById('fighter2-name').style.animation = '';
+      document.getElementById('round-info').style.animation = '';
+
+      const time = data.roundTime || 180;
+      const statusChanged = lastStatus !== data.status;
+
+      if (statusChanged) {
+        if (data.status === 'fighting') {
+          currentTime = time;
+          startTimer();
+        } else {
+          stopTimer();
+          currentTime = time;
+        }
+      }
+
+      if (!statusChanged && data.status === 'fighting' && !isTimerRunning) {
+        startTimer();
+      }
+
+      lastStatus = data.status;
+      updateTimerDisplay();
+
+      // Анимации для очков
+      if (data.fighter1.score > 0) {
+        const score1 = document.getElementById('fighter1-score');
+        score1.classList.add('pulse');
+        setTimeout(function() { score1.classList.remove('pulse'); }, 1000);
+      }
+
+      if (data.fighter2.score > 0) {
+        const score2 = document.getElementById('fighter2-score');
+        score2.classList.add('pulse');
+        setTimeout(function() { score2.classList.remove('pulse'); }, 1000);
+      }
+
+      // Анимация таймера
+      if (data.status === 'fighting') {
+        document.getElementById('timer').classList.add('blink');
+      } else {
+        document.getElementById('timer').classList.remove('blink');
+      }
+
+      // Статус боя
+      const statusMap = {
+        'preparing': 'Подготовка',
+        'fighting': 'Идет бой',
+        'break': 'Перерыв',
+        'finished': 'Завершен'
+      };
+      document.getElementById('status').textContent = statusMap[data.status] || 'Подготовка';
+    }
+
+    // Получение данных с сервера
+    async function fetchScoreboardData() {
+      try {
+        const response = await fetch('/api/scoreboard3/data');
+        const result = await response.json();
+        
+        if (result.success) {
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('fighters-row').style.display = 'flex';
+          updateScoreboard(result.data);
+        } else {
+          document.getElementById('loading').textContent = 'Ошибка загрузки данных';
+        }
+      } catch (error) {
+        console.error('Ошибка получения данных:', error);
+        document.getElementById('loading').textContent = 'Ошибка подключения к серверу';
+      }
+    }
+
+    // Автообновление
+    function startAutoUpdate() {
+      fetchScoreboardData();
+      updateInterval = setInterval(fetchScoreboardData, 1000);
+    }
+
+    // Остановка автообновления
+    function stopAutoUpdate() {
+      if (updateInterval) {
+        clearInterval(updateInterval);
+      }
+      stopTimer();
+    }
+
+    // Запуск при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+      startAutoUpdate();
+    });
+
+    // Остановка при закрытии страницы
+    window.addEventListener('beforeunload', function() {
+      stopAutoUpdate();
+    });
+  </script>
+</body>
+</html>

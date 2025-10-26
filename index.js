@@ -21,7 +21,7 @@ const User = sequelize.define('User', {
     allowNull: false,
   },
   role: {
-    type: DataTypes.ENUM('admin', 'user'),
+    type: DataTypes.ENUM('admin', 'judge', 'user'),
     defaultValue: 'user',
   },
   email: {
@@ -279,7 +279,33 @@ const FightHistory = sequelize.define('FightHistory', {
 });
 
 const app = express();
+
+// CORS настройки для доступа с других устройств
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  
+  // Обработка preflight запросов
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
+
 app.use(express.json({ limit: '10mb' }));
+
+// Перенаправление с корневого пути на страницу выбора видов спорта
+app.get('/', (req, res) => {
+  res.redirect('/sport-selection.html');
+});
+
+// Также перенаправляем с /index.html на страницу выбора видов спорта
+app.get('/index.html', (req, res) => {
+  res.redirect('/sport-selection.html');
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Синхронизация моделей с БД и добавление тестовых бойцов и тренеров
@@ -403,6 +429,19 @@ sequelize.sync({ force: false })
       });
       console.log('Админ создан: логин - admin, пароль - 1234');
     }
+    
+    // Создаем тестового судью
+    const judgeUser = await User.findOne({ where: { username: 'judge' } });
+    if (!judgeUser) {
+      const hashedJudgePassword = await bcrypt.hash('judge123', 10);
+      await User.create({
+        username: 'judge',
+        password: hashedJudgePassword,
+        role: 'judge',
+        email: 'judge@sherdoc.kg'
+      });
+      console.log('Судья создан: логин - judge, пароль - judge123');
+    }
   })
   .catch((err) => {
     console.error('Ошибка синхронизации:', err);
@@ -443,7 +482,7 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ error: 'Неверный логин или пароль' });
     }
     
-    if (user.role !== 'admin') {
+    if (user.role !== 'admin' && user.role !== 'judge') {
       return res.status(403).json({ error: 'Доступ запрещен' });
     }
     
@@ -876,18 +915,201 @@ app.get('/api/fighters/:id/history', async (req, res) => {
   }
 });
 
+// API: обновление табло (только для судей)
+app.post('/api/scoreboard/update', async (req, res) => {
+  try {
+    const { fighter1, fighter2, round, roundTime, status, winner, showWinner } = req.body;
+    
+    // Сохраняем данные табло в глобальную переменную (в реальном проекте используйте БД)
+    global.scoreboardData = {
+      fighter1: {
+        name: fighter1.name || 'Боец 1',
+        score: parseInt(fighter1.score) || 0
+      },
+      fighter2: {
+        name: fighter2.name || 'Боец 2', 
+        score: parseInt(fighter2.score) || 0
+      },
+      round: parseInt(round) || 1,
+      roundTime: parseInt(roundTime) || 180,
+      status: status || 'preparing',
+      winner: winner || null,
+      showWinner: showWinner || false,
+      lastUpdated: new Date()
+    };
+    
+    res.json({ 
+      success: true, 
+      message: 'Табло обновлено',
+      data: global.scoreboardData
+    });
+  } catch (error) {
+    console.error('Ошибка обновления табло:', error);
+    res.status(500).json({ error: 'Ошибка обновления табло' });
+  }
+});
+
+// API: обновление табло для судьи 1
+app.post('/api/scoreboard1/update', async (req, res) => {
+  try {
+    const { fighter1, fighter2, round, roundTime, status, winner, showWinner } = req.body;
+    
+    global.scoreboard1Data = {
+      fighter1: {
+        name: fighter1.name || 'Боец 1',
+        score: parseInt(fighter1.score) || 0
+      },
+      fighter2: {
+        name: fighter2.name || 'Боец 2', 
+        score: parseInt(fighter2.score) || 0
+      },
+      round: parseInt(round) || 1,
+      roundTime: parseInt(roundTime) || 180,
+      status: status || 'preparing',
+      winner: winner || null,
+      showWinner: showWinner || false,
+      lastUpdated: new Date()
+    };
+    
+    res.json({ 
+      success: true, 
+      message: 'Табло судьи 1 обновлено',
+      data: global.scoreboard1Data
+    });
+  } catch (error) {
+    console.error('Ошибка обновления табло судьи 1:', error);
+    res.status(500).json({ error: 'Ошибка обновления табло судьи 1' });
+  }
+});
+
+// API: обновление табло для судьи 2
+app.post('/api/scoreboard2/update', async (req, res) => {
+  try {
+    const { fighter1, fighter2, round, roundTime, status, winner, showWinner } = req.body;
+    
+    global.scoreboard2Data = {
+      fighter1: {
+        name: fighter1.name || 'Боец 1',
+        score: parseInt(fighter1.score) || 0
+      },
+      fighter2: {
+        name: fighter2.name || 'Боец 2', 
+        score: parseInt(fighter2.score) || 0
+      },
+      round: parseInt(round) || 1,
+      roundTime: parseInt(roundTime) || 180,
+      status: status || 'preparing',
+      winner: winner || null,
+      showWinner: showWinner || false,
+      lastUpdated: new Date()
+    };
+    
+    res.json({ 
+      success: true, 
+      message: 'Табло судьи 2 обновлено',
+      data: global.scoreboard2Data
+    });
+  } catch (error) {
+    console.error('Ошибка обновления табло судьи 2:', error);
+    res.status(500).json({ error: 'Ошибка обновления табло судьи 2' });
+  }
+});
+
+// API: обновление табло для судьи 3
+app.post('/api/scoreboard3/update', async (req, res) => {
+  try {
+    const { fighter1, fighter2, round, roundTime, status, winner, showWinner } = req.body;
+    
+    global.scoreboard3Data = {
+      fighter1: {
+        name: fighter1.name || 'Боец 1',
+        score: parseInt(fighter1.score) || 0
+      },
+      fighter2: {
+        name: fighter2.name || 'Боец 2', 
+        score: parseInt(fighter2.score) || 0
+      },
+      round: parseInt(round) || 1,
+      roundTime: parseInt(roundTime) || 180,
+      status: status || 'preparing',
+      winner: winner || null,
+      showWinner: showWinner || false,
+      lastUpdated: new Date()
+    };
+    
+    res.json({ 
+      success: true, 
+      message: 'Табло судьи 3 обновлено',
+      data: global.scoreboard3Data
+    });
+  } catch (error) {
+    console.error('Ошибка обновления табло судьи 3:', error);
+    res.status(500).json({ error: 'Ошибка обновления табло судьи 3' });
+  }
+});
+
+// API: обновление табло для судьи 4
+app.post('/api/scoreboard4/update', async (req, res) => {
+  try {
+    const { fighter1, fighter2, round, roundTime, status, winner, showWinner } = req.body;
+    
+    global.scoreboard4Data = {
+      fighter1: {
+        name: fighter1.name || 'Боец 1',
+        score: parseInt(fighter1.score) || 0
+      },
+      fighter2: {
+        name: fighter2.name || 'Боец 2', 
+        score: parseInt(fighter2.score) || 0
+      },
+      round: parseInt(round) || 1,
+      roundTime: parseInt(roundTime) || 180,
+      status: status || 'preparing',
+      winner: winner || null,
+      showWinner: showWinner || false,
+      lastUpdated: new Date()
+    };
+    
+    res.json({ 
+      success: true, 
+      message: 'Табло судьи 4 обновлено',
+      data: global.scoreboard4Data
+    });
+  } catch (error) {
+    console.error('Ошибка обновления табло судьи 4:', error);
+    res.status(500).json({ error: 'Ошибка обновления табло судьи 4' });
+  }
+});
+
+// API: получение данных табло (публичный доступ)
+app.get('/api/scoreboard/data', (req, res) => {
+  try {
+    if (!global.scoreboardData) {
+      // Возвращаем данные по умолчанию
+      global.scoreboardData = {
+        fighter1: { name: 'Боец 1', score: 0 },
+        fighter2: { name: 'Боец 2', score: 0 },
+        round: 1,
+        roundTime: 180,
+        status: 'preparing',
+        winner: null,
+        showWinner: false,
+        lastUpdated: new Date()
+      };
+    }
+    
+    res.json({ 
+      success: true, 
+      data: global.scoreboardData 
+    });
+  } catch (error) {
+    console.error('Ошибка получения данных табло:', error);
+    res.status(500).json({ error: 'Ошибка получения данных табло' });
+  }
+});
+
 app.get('/login.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin-login.html'));
-});
-
-// Перенаправление с корневого пути на страницу выбора видов спорта
-app.get('/', (req, res) => {
-  res.redirect('/sport-selection.html');
-});
-
-// Также перенаправляем с /index.html на страницу выбора видов спорта
-app.get('/index.html', (req, res) => {
-  res.redirect('/sport-selection.html');
 });
 
 // Маршрут для главной страницы с фильтрацией по виду спорта
@@ -895,12 +1117,117 @@ app.get('/main.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Главная страница - перенаправление на выбор видов спорта
-app.get('/', (req, res) => {
-  res.redirect('/sport-selection.html');
+// API: получение данных табло судьи 1
+app.get('/api/scoreboard1/data', (req, res) => {
+  try {
+    if (!global.scoreboard1Data) {
+      global.scoreboard1Data = {
+        fighter1: { name: 'Боец 1', score: 0 },
+        fighter2: { name: 'Боец 2', score: 0 },
+        round: 1,
+        roundTime: 180,
+        status: 'preparing',
+        winner: null,
+        showWinner: false,
+        lastUpdated: new Date()
+      };
+    }
+    
+    res.json({ 
+      success: true, 
+      data: global.scoreboard1Data 
+    });
+  } catch (error) {
+    console.error('Ошибка получения данных табло судьи 1:', error);
+    res.status(500).json({ error: 'Ошибка получения данных табло судьи 1' });
+  }
 });
 
-const PORT = 4000;
-app.listen(PORT, () => {
-  console.log(`Сервер запущен на порту ${PORT}`);
+// API: получение данных табло судьи 2
+app.get('/api/scoreboard2/data', (req, res) => {
+  try {
+    if (!global.scoreboard2Data) {
+      global.scoreboard2Data = {
+        fighter1: { name: 'Боец 1', score: 0 },
+        fighter2: { name: 'Боец 2', score: 0 },
+        round: 1,
+        roundTime: 180,
+        status: 'preparing',
+        winner: null,
+        showWinner: false,
+        lastUpdated: new Date()
+      };
+    }
+    
+    res.json({ 
+      success: true, 
+      data: global.scoreboard2Data 
+    });
+  } catch (error) {
+    console.error('Ошибка получения данных табло судьи 2:', error);
+    res.status(500).json({ error: 'Ошибка получения данных табло судьи 2' });
+  }
+});
+
+// API: получение данных табло судьи 3
+app.get('/api/scoreboard3/data', (req, res) => {
+  try {
+    if (!global.scoreboard3Data) {
+      global.scoreboard3Data = {
+        fighter1: { name: 'Боец 1', score: 0 },
+        fighter2: { name: 'Боец 2', score: 0 },
+        round: 1,
+        roundTime: 180,
+        status: 'preparing',
+        winner: null,
+        showWinner: false,
+        lastUpdated: new Date()
+      };
+    }
+    
+    res.json({ 
+      success: true, 
+      data: global.scoreboard3Data 
+    });
+  } catch (error) {
+    console.error('Ошибка получения данных табло судьи 3:', error);
+    res.status(500).json({ error: 'Ошибка получения данных табло судьи 3' });
+  }
+});
+
+// API: получение данных табло судьи 4
+app.get('/api/scoreboard4/data', (req, res) => {
+  try {
+    if (!global.scoreboard4Data) {
+      global.scoreboard4Data = {
+        fighter1: { name: 'Боец 1', score: 0 },
+        fighter2: { name: 'Боец 2', score: 0 },
+        round: 1,
+        roundTime: 180,
+        status: 'preparing',
+        winner: null,
+        showWinner: false,
+        lastUpdated: new Date()
+      };
+    }
+    
+    res.json({ 
+      success: true, 
+      data: global.scoreboard4Data 
+    });
+  } catch (error) {
+    console.error('Ошибка получения данных табло судьи 4:', error);
+    res.status(500).json({ error: 'Ошибка получения данных табло судьи 4' });
+  }
+});
+
+const PORT = process.env.PORT || 4000;
+const HOST = '0.0.0.0'; // Слушаем на всех интерфейсах
+
+app.listen(PORT, HOST, () => {
+  console.log(`Сервер запущен на ${HOST}:${PORT}`);
+  console.log(`Доступен по адресам:`);
+  console.log(`  - http://localhost:${PORT}`);
+  console.log(`  - http://0.0.0.0:${PORT}`);
+  console.log(`  - http://[IP_АДРЕС_СЕРВЕРА]:${PORT}`);
 }); 

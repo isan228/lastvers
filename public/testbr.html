@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Турнирная сетка (16 команд)</title>
+  <style>
+    body {
+      font-family: Inter, Segoe UI, Roboto, Arial, sans-serif;
+      background: #f8fafc;
+      padding: 24px;
+      color: #111827;
+    }
+    h1 {
+      font-size: 20px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .bracket-wrapper {
+      position: relative;
+      min-height: 800px;
+    }
+    .round {
+      position: relative;
+    }
+    .match {
+      position: absolute;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      padding: 8px 10px;
+      width: 180px;
+      text-align: left;
+      z-index: 2;
+      border: 1px solid #e2e8f0;
+    }
+    .team {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin: 2px 0;
+    }
+    svg.connectors {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+  <h1>Турнирная сетка — 16 команд</h1>
+  <div class="bracket-wrapper" id="bracketWrapper">
+    <svg class="connectors" id="lines"></svg>
+  </div>
+
+  <script>
+    const rounds = [8, 4, 2, 1]; // количество матчей в каждом раунде
+    const matchHeight = 60;
+    const matchGap = 40;
+    const columnGap = 220;
+
+    const teams = Array.from({length:16}, (_,i)=>`Команда ${i+1}`);
+
+    const wrapper = document.getElementById('bracketWrapper');
+    const svg = document.getElementById('lines');
+
+    function buildBracket() {
+      wrapper.querySelectorAll('.round').forEach(r => r.remove());
+      svg.innerHTML = '';
+
+      let prevMatches = [];
+
+      rounds.forEach((count, roundIndex) => {
+        const round = document.createElement('div');
+        round.className = 'round';
+        wrapper.appendChild(round);
+
+        const matches = [];
+
+        // 1️⃣ Создаём матчи
+        for (let i = 0; i < count; i++) {
+          const match = document.createElement('div');
+          match.className = 'match';
+          match.dataset.round = roundIndex;
+          match.dataset.index = i;
+
+          const team1 = document.createElement('div');
+          team1.className = 'team';
+          const team2 = document.createElement('div');
+          team2.className = 'team';
+
+          if (roundIndex === 0) {
+            team1.textContent = teams[i * 2];
+            team2.textContent = teams[i * 2 + 1];
+          } else {
+            team1.textContent = '-';
+            team2.textContent = '-';
+          }
+
+          match.appendChild(team1);
+          match.appendChild(team2);
+          round.appendChild(match);
+          matches.push(match);
+        }
+
+        // 2️⃣ Расставляем матчи по вертикали
+        matches.forEach((m, i) => {
+          let y;
+          if (roundIndex === 0) {
+            y = i * (matchHeight + matchGap);
+          } else {
+            const prev1 = prevMatches[i * 2];
+            const prev2 = prevMatches[i * 2 + 1];
+            y = (prev1.offsetTop + prev2.offsetTop) / 2;
+          }
+          m.style.top = y + 'px';
+          m.style.left = roundIndex * columnGap + 'px';
+        });
+
+        // 3️⃣ Рисуем линии
+        if (roundIndex > 0) {
+          matches.forEach((m, i) => {
+            const prev1 = prevMatches[i * 2];
+            const prev2 = prevMatches[i * 2 + 1];
+            const startX = (roundIndex - 1) * columnGap + 180;
+            const endX = roundIndex * columnGap;
+            const y1 = prev1.offsetTop + matchHeight / 2;
+            const y2 = prev2.offsetTop + matchHeight / 2;
+            const yMid = m.offsetTop + matchHeight / 2;
+
+            drawSquareLine(startX, y1, endX, yMid);
+            drawSquareLine(startX, y2, endX, yMid);
+          });
+        }
+
+        prevMatches = matches;
+      });
+    }
+
+    function drawSquareLine(x1, y1, x2, y2) {
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      const midX = (x1 + x2) / 2;
+      path.setAttribute('d', `M ${x1} ${y1} H ${midX} V ${y2} H ${x2}`);
+      path.setAttribute('stroke', '#94a3b8');
+      path.setAttribute('stroke-width', '2');
+      path.setAttribute('fill', 'none');
+      svg.appendChild(path);
+    }
+
+    window.addEventListener('load', buildBracket);
+    window.addEventListener('resize', buildBracket);
+  </script>
+</body>
+</html>

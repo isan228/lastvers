@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Панель судьи 2 — Sherdoc</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #0a0a0a 60%, #00ff00 100%);
+      color: #fff;
+      min-height: 100vh;
+      font-family: 'Arial', sans-serif;
+    }
+    .judge-header {
+      background: #00ff00;
+      color: #000;
+      padding: 1rem;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .card {
+      background: #181818cc;
+      border: 1px solid #00ff00;
+      border-radius: 15px;
+      color: #fff;
+    }
+    .form-control, .form-select {
+      background: #2a2a2a;
+      border: 1px solid #00ff00;
+      color: #fff;
+      font-family: 'Arial', sans-serif;
+    }
+    .form-control:focus, .form-select:focus {
+      background: #2a2a2a;
+      border-color: #00ff00;
+      color: #fff;
+      box-shadow: 0 0 0 0.2rem rgba(0, 255, 0, 0.25);
+    }
+    .btn-primary {
+      background: #00ff00;
+      border: none;
+      color: #000;
+    }
+    .btn-primary:hover {
+      background: #00cc00;
+    }
+    .btn-success {
+      background: #28a745;
+      border: none;
+    }
+    .btn-warning {
+      background: #ffc107;
+      border: none;
+      color: #000;
+    }
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      padding: 15px 20px;
+      border-radius: 10px;
+      color: #fff;
+      font-weight: bold;
+      display: none;
+    }
+    .notification.success {
+      background: #28a745;
+    }
+    .notification.error {
+      background: #dc3545;
+    }
+  </style>
+</head>
+<body>
+  <div class="judge-header">
+    <h2><i class="bi bi-person-badge"></i> ПАНЕЛЬ СУДЬИ 2</h2>
+    <p>Управление табло боя</p>
+  </div>
+
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-header">
+            <h5>Управление табло</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">Боец 1:</label>
+                  <input type="text" class="form-control" id="fighter1-name" placeholder="Имя бойца 1">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Очки бойца 1:</label>
+                  <input type="number" class="form-control" id="fighter1-score" value="0" min="0">
+                </div>
+                <div class="mb-3">
+                  <button class="btn btn-success w-100" onclick="selectWinner(1)">👑 Победитель 1</button>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">Боец 2:</label>
+                  <input type="text" class="form-control" id="fighter2-name" placeholder="Имя бойца 2">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Очки бойца 2:</label>
+                  <input type="number" class="form-control" id="fighter2-score" value="0" min="0">
+                </div>
+                <div class="mb-3">
+                  <button class="btn btn-success w-100" onclick="selectWinner(2)">👑 Победитель 2</button>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">Время боя (сек):</label>
+                  <input type="number" class="form-control" id="round-time" value="180" min="30" max="600">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">Статус боя:</label>
+                  <select class="form-select" id="fight-status">
+                    <option value="preparing">Подготовка</option>
+                    <option value="fighting">Идет бой</option>
+                    <option value="break">Перерыв</option>
+                    <option value="finished">Завершен</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+              <button class="btn btn-warning" onclick="resetScoreboard()">🔄 Сбросить</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-header">
+            <h5>📺 Табло судьи 2</h5>
+          </div>
+          <div class="card-body">
+            <p class="text-muted">Ссылка для отображения табло:</p>
+            <div class="input-group mb-3">
+              <input type="text" class="form-control" id="public-link" readonly value="http://localhost:4000/scoreboard2.html">
+              <button class="btn btn-outline-secondary" onclick="copyLink()">📋</button>
+            </div>
+            <a href="/scoreboard2.html" target="_blank" class="btn btn-success w-100">👁️ Открыть табло</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row mt-4">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h5>📊 Предварительный просмотр</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-4 text-center">
+                <h4 id="preview-fighter1">Боец 1</h4>
+                <h1 id="preview-score1" class="text-success">0</h1>
+              </div>
+              <div class="col-md-4 text-center">
+                <h5 id="preview-round">Бой</h5>
+                <h2 id="preview-timer" class="text-success">3:00</h2>
+                <p id="preview-status">ПОДГОТОВКА</p>
+              </div>
+              <div class="col-md-4 text-center">
+                <h4 id="preview-fighter2">Боец 2</h4>
+                <h1 id="preview-score2" class="text-success">0</h1>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Уведомления -->
+  <div id="notification" class="notification"></div>
+
+  <script>
+    // Проверка авторизации
+    function checkAuth() {
+      const auth = localStorage.getItem('judge-auth');
+      const role = localStorage.getItem('judge-role');
+      const user = localStorage.getItem('judge-user');
+
+      if (!auth || role !== 'judge') {
+        window.location.href = '/judge-login.html';
+        return;
+      }
+    }
+
+    // Выход
+    function logout() {
+      localStorage.removeItem('judge-auth');
+      localStorage.removeItem('judge-user');
+      localStorage.removeItem('judge-role');
+      window.location.href = '/judge-login.html';
+    }
+
+    // Показ уведомлений
+    function showNotification(message, type) {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.className = `notification ${type}`;
+      notification.style.display = 'block';
+      
+      setTimeout(() => {
+        notification.style.display = 'none';
+      }, 3000);
+    }
+
+    // Копирование ссылки
+    function copyLink() {
+      const linkInput = document.getElementById('public-link');
+      linkInput.select();
+      document.execCommand('copy');
+      showNotification('Ссылка скопирована!', 'success');
+    }
+
+    // Обновление предварительного просмотра
+    function updatePreview() {
+      document.getElementById('preview-fighter1').textContent = document.getElementById('fighter1-name').value || 'Боец 1';
+      document.getElementById('preview-fighter2').textContent = document.getElementById('fighter2-name').value || 'Боец 2';
+      document.getElementById('preview-score1').textContent = document.getElementById('fighter1-score').value || '0';
+      document.getElementById('preview-score2').textContent = document.getElementById('fighter2-score').value || '0';
+      document.getElementById('preview-round').textContent = 'Бой';
+      
+      const time = parseInt(document.getElementById('round-time').value) || 180;
+      const minutes = Math.floor(time / 60);
+      const seconds = time % 60;
+      document.getElementById('preview-timer').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+      
+      const status = document.getElementById('fight-status').value;
+      document.getElementById('preview-status').textContent = status.toUpperCase();
+    }
+
+    // Debounced update function
+    let updateTimeout;
+    function debouncedUpdate() {
+      clearTimeout(updateTimeout);
+      updateTimeout = setTimeout(function() {
+        updatePreview();
+        updateScoreboard();
+      }, 500);
+    }
+
+    // Обновление табло
+    function updateScoreboard() {
+      const data = {
+        fighter1: {
+          name: document.getElementById('fighter1-name').value || 'Боец 1',
+          score: parseInt(document.getElementById('fighter1-score').value) || 0
+        },
+        fighter2: {
+          name: document.getElementById('fighter2-name').value || 'Боец 2',
+          score: parseInt(document.getElementById('fighter2-score').value) || 0
+        },
+        round: 1,
+        roundTime: parseInt(document.getElementById('round-time').value),
+        status: document.getElementById('fight-status').value
+      };
+      
+      fetch('/api/scoreboard2/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+      .then(result => {
+        if (result.success) {
+          updatePreview();
+        }
+      })
+      .catch(error => {
+        console.error('Ошибка:', error);
+      });
+    }
+    
+    // Выбор победителя
+    function selectWinner(fighterNumber) {
+      const data = {
+        fighter1: {
+          name: document.getElementById('fighter1-name').value || 'Боец 1',
+          score: parseInt(document.getElementById('fighter1-score').value) || 0
+        },
+        fighter2: {
+          name: document.getElementById('fighter2-name').value || 'Боец 2',
+          score: parseInt(document.getElementById('fighter2-score').value) || 0
+        },
+        round: 1,
+        roundTime: parseInt(document.getElementById('round-time').value),
+        status: 'finished',
+        winner: fighterNumber,
+        showWinner: true
+      };
+      
+      fetch('/api/scoreboard2/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+      .then(result => {
+        if (result.success) {
+          updatePreview();
+          showNotification(`Победитель: Боец ${fighterNumber}!`, 'success');
+          
+          // Через 10 секунд убираем показ победителя
+          setTimeout(function() {
+            const normalData = {
+              fighter1: data.fighter1,
+              fighter2: data.fighter2,
+              round: 1,
+              roundTime: data.roundTime,
+              status: 'finished',
+              winner: fighterNumber,
+              showWinner: false
+            };
+            
+            fetch('/api/scoreboard2/update', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(normalData)
+            });
+          }, 10000);
+        } else {
+          showNotification('Ошибка выбора победителя', 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Ошибка:', error);
+        showNotification('Ошибка выбора победителя', 'error');
+      });
+    }
+
+    // Сброс табло
+    function resetScoreboard() {
+      document.getElementById('fighter1-name').value = '';
+      document.getElementById('fighter2-name').value = '';
+      document.getElementById('fighter1-score').value = '0';
+      document.getElementById('fighter2-score').value = '0';
+      document.getElementById('round-time').value = '180';
+      document.getElementById('fight-status').value = 'preparing';
+      
+      updatePreview();
+      updateScoreboard();
+      showNotification('Табло сброшено', 'success');
+    }
+
+    // Автоматическое обновление при изменении полей
+    document.addEventListener('input', function() {
+      updatePreview();
+      debouncedUpdate();
+    });
+    
+    document.addEventListener('change', function() {
+      updatePreview();
+      debouncedUpdate();
+    });
+
+    // Инициализация
+    document.addEventListener('DOMContentLoaded', function() {
+      checkAuth();
+      updatePreview();
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
