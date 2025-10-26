@@ -224,18 +224,11 @@
   </div>
 
   <script>
-    // Проверка авторизации
+    // Проверка авторизации (отключена)
     function checkAuth() {
-      const auth = localStorage.getItem('judge-auth');
-      const role = localStorage.getItem('judge-role');
-      const user = localStorage.getItem('judge-user');
-      
-      if (!auth || role !== 'judge') {
-        window.location.href = '/judge-login.html';
-        return;
-      }
-      
-      document.getElementById('user-info').textContent = `Судья: ${user}`;
+      // Аутентификация отключена для судей
+      console.log('Аутентификация судей отключена');
+      document.getElementById('user-info').textContent = 'Судья: Доступ открыт';
     }
     
     // Выход из системы

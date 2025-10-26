@@ -192,16 +192,10 @@
   <div id="notification" class="notification"></div>
 
   <script>
-    // Проверка авторизации
+    // Проверка авторизации (отключена)
     function checkAuth() {
-      const auth = localStorage.getItem('judge-auth');
-      const role = localStorage.getItem('judge-role');
-      const user = localStorage.getItem('judge-user');
-
-      if (!auth || role !== 'judge') {
-        window.location.href = '/judge-login.html';
-        return;
-      }
+      // Аутентификация отключена для судей
+      console.log('Аутентификация судей отключена');
     }
 
     // Выход
